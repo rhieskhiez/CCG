@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Calendar Generator</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Content Calendar Generator</h1>
+            <p>Generate jadwal konten bulanan dan tahunan secara otomatis.</p>
+        </header>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="month-select">Pilih Bulan:</label>
+                <select id="month-select"></select>
+            </div>
+            <div class="control-group">
+                <label for="year-select">Pilih Tahun:</label>
+                <select id="year-select"></select>
+            </div>
+            <button id="generate-btn">Generate Jadwal</button>
+            <button id="generate-year-btn">Generate 1 Tahun Penuh</button>
+        </div>
+        
+        <div id="calendar-container">
+            </div>
+
+        <div id="yearly-container">
+             </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
