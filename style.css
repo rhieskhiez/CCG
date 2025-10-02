@@ -160,3 +160,71 @@ button:hover {
     text-align: center;
     margin-bottom: 20px;
 }
+
+/* ----------------------------------------------- */
+/* --- Media Query for Responsive Design (BARU) --- */
+/* ----------------------------------------------- */
+
+/* Terapkan gaya ini jika lebar layar 768px atau kurang (ukuran tablet & smartphone) */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    .container {
+        padding: 15px;
+    }
+
+    header h1 {
+        font-size: 24px;
+    }
+    
+    .controls {
+        flex-direction: column; /* Tombol & dropdown akan tersusun ke bawah */
+        gap: 15px;
+    }
+
+    /* Ubah kalender dari grid menjadi list */
+    .calendar {
+        display: block; /* Hapus layout grid */
+        border: none;
+    }
+
+    /* Sembunyikan header hari (Min, Sen, Sel, dst.) karena tidak diperlukan di list view */
+    .calendar-header {
+        display: none;
+    }
+
+    /* Atur setiap hari menjadi seperti kartu/item dalam daftar */
+    .day {
+        min-height: auto;
+        margin-bottom: 10px;
+        border: 1px solid var(--border-color); /* Beri border di sekeliling */
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        padding: 12px;
+    }
+
+    .day.weekend {
+        border-left: 5px solid var(--primary-color); /* Beri tanda khusus untuk weekend */
+    }
+
+    /* Ubah tampilan nomor hari agar lebih jelas */
+    .day-number {
+        text-align: left;
+        font-size: 18px;
+        font-weight: 700;
+        background-color: var(--secondary-color);
+        padding: 5px 10px;
+        border-radius: 6px;
+        margin-bottom: 10px;
+    }
+    
+    .tasks {
+        font-size: 14px; /* Perbesar sedikit font tugas agar mudah dibaca */
+    }
+    
+    .task {
+        padding: 6px 8px; /* Beri sedikit padding lebih pada tugas */
+    }
+}
