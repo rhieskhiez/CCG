@@ -1098,6 +1098,224 @@
             -ms-user-select: none;
             user-select: none;
         }
+		
+		/* Menu Header dengan Close Button */
+.menu-header {
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 10;
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 15px;
+}
+
+.menu-handle {
+    width: 40px;
+    height: 4px;
+    background: #cbd5e0;
+    border-radius: 2px;
+    margin: 10px auto;
+    cursor: grab;
+}
+
+.menu-handle:active {
+    cursor: grabbing;
+}
+
+.menu-title-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+}
+
+.menu-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #2d3748;
+}
+
+.menu-close-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: #f8f9fa;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 20px;
+    color: #718096;
+}
+
+.menu-close-btn:hover {
+    background: #e9ecef;
+    color: #2d3748;
+    transform: rotate(90deg);
+}
+
+.menu-close-btn:active {
+    transform: scale(0.95) rotate(90deg);
+}
+
+/* Floating close button alternative (optional) */
+.menu-close-floating {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: all 0.3s;
+    z-index: 11;
+    font-size: 24px;
+    color: #718096;
+}
+
+.menu-close-floating:hover {
+    background: #667eea;
+    color: white;
+    transform: rotate(90deg);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+/* Update menu content padding */
+.menu-content {
+    padding: 15px;
+    padding-top: 0;
+}
+
+/* Animasi close button saat menu dibuka */
+.mobile-menu.active .menu-close-btn {
+    animation: rotateIn 0.5s ease-out;
+}
+
+@keyframes rotateIn {
+    from {
+        transform: rotate(-90deg);
+        opacity: 0;
+    }
+    to {
+        transform: rotate(0deg);
+        opacity: 1;
+    }
+}
+
+/* Optional: Close button dengan icon yang lebih stylish */
+.menu-close-modern {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border: 2px solid #e9ecef;
+    background: white;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+    overflow: hidden;
+}
+
+.menu-close-modern::before,
+.menu-close-modern::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 2px;
+    background: #718096;
+    transition: all 0.3s;
+}
+
+.menu-close-modern::before {
+    transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.menu-close-modern::after {
+    transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.menu-close-modern:hover {
+    background: #667eea;
+    border-color: #667eea;
+    transform: scale(1.1);
+}
+
+.menu-close-modern:hover::before,
+.menu-close-modern:hover::after {
+    background: white;
+}
+
+/* Responsive adjustments */
+@media screen and (orientation: landscape) and (max-height: 600px) {
+    .menu-header {
+        padding-bottom: 10px;
+    }
+    
+    .menu-close-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 18px;
+    }
+    
+    .menu-title {
+        font-size: 16px;
+    }
+}
+
+/* Tablet adjustments */
+@media screen and (min-width: 768px) {
+    .menu-close-btn {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .menu-title {
+        font-size: 20px;
+    }
+    
+    .menu-title-wrapper {
+        padding: 0 30px;
+    }
+}
+
+/* Alternative: Swipe down indicator dengan close */
+.menu-swipe-close {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    cursor: pointer;
+}
+
+.menu-swipe-close .swipe-line {
+    width: 40px;
+    height: 4px;
+    background: #cbd5e0;
+    border-radius: 2px;
+    margin-bottom: 4px;
+    transition: all 0.3s;
+}
+
+.menu-swipe-close:hover .swipe-line {
+    background: #667eea;
+}
+
+.menu-swipe-close .close-text {
+    font-size: 11px;
+    color: #718096;
+    margin-top: 2px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
     </style>
 </head>
 <body>
@@ -1163,15 +1381,21 @@
         </nav>
     </div>
     
-    <!-- Mobile Menu -->
-    <div class="mobile-menu" id="mobileMenu">
+<!-- Mobile Menu -->
+<div class="mobile-menu" id="mobileMenu">
+    <div class="menu-header">
         <div class="menu-handle"></div>
-        <div class="menu-title" id="menuTitle">Menu</div>
-        <div class="menu-content" id="menuContent">
-            <!-- Dynamic content will be inserted here -->
+        <div class="menu-title-wrapper">
+            <div class="menu-title" id="menuTitle">Menu</div>
+            <button class="menu-close-btn" id="menuCloseBtn">
+                <span>✕</span>
+            </button>
         </div>
     </div>
-    
+    <div class="menu-content" id="menuContent">
+        <!-- Dynamic content will be inserted here -->
+    </div>
+</div>    
     <!-- Task Modal -->
     <div class="modal-mobile" id="taskModal">
         <div class="modal-header-mobile">
@@ -2229,6 +2453,101 @@
 
         window.saveDataLocal = saveDataLocal;
         window.showConfigModal = showConfigModal;
+		
+		// Tambahkan event listener untuk close button
+function setupEventListeners() {
+    // ... kode existing ...
+    
+    // Menu close button
+    document.getElementById('menuCloseBtn').addEventListener('click', () => {
+        closeMenu();
+        // Reset active state ke calendar
+        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+        document.getElementById('navCalendar').classList.add('active');
+    });
+    
+    // Alternative: Close dengan swipe atau click di backdrop
+    document.getElementById('mobileMenu').addEventListener('click', (e) => {
+        // Close jika click di luar menu content
+        if (e.target === document.getElementById('mobileMenu')) {
+            closeMenu();
+        }
+    });
+    
+    // ... rest of existing code ...
+}
+
+// Update closeMenu function dengan animasi
+function closeMenu() {
+    const menu = document.getElementById('mobileMenu');
+    menu.style.transition = 'bottom 0.3s ease-out';
+    menu.classList.remove('active');
+    
+    // Optional: Hapus active state dari nav items
+    setTimeout(() => {
+        document.querySelectorAll('.nav-item').forEach(item => {
+            if (item.id !== 'navCalendar') {
+                item.classList.remove('active');
+            }
+        });
+    }, 300);
+}
+		
+		// Enhanced close functionality dengan gesture
+function enhancedMenuClose() {
+    const menu = document.getElementById('mobileMenu');
+    const menuHeader = document.querySelector('.menu-header');
+    const closeBtn = document.getElementById('menuCloseBtn');
+    
+    // Rotate close button on hover
+    closeBtn.addEventListener('mouseenter', () => {
+        closeBtn.style.transform = 'rotate(90deg)';
+    });
+    
+    closeBtn.addEventListener('mouseleave', () => {
+        closeBtn.style.transform = 'rotate(0deg)';
+    });
+    
+    // ESC key to close
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && menu.classList.contains('active')) {
+            closeMenu();
+        }
+    });
+    
+    // Swipe down to close
+    let startY = 0;
+    let currentY = 0;
+    
+    menuHeader.addEventListener('touchstart', (e) => {
+        startY = e.touches[0].clientY;
+    });
+    
+    menuHeader.addEventListener('touchmove', (e) => {
+        currentY = e.touches[0].clientY;
+        const diff = currentY - startY;
+        
+        if (diff > 0) {
+            menu.style.transform = `translateY(${diff}px)`;
+        }
+    });
+    
+    menuHeader.addEventListener('touchend', () => {
+        const diff = currentY - startY;
+        
+        if (diff > 100) {
+            closeMenu();
+        } else {
+            menu.style.transform = 'translateY(0)';
+        }
+        
+        startY = 0;
+        currentY = 0;
+    });
+}
+
+// Call this in init()
+enhancedMenuClose();
     </script>
 </body>
 </html>
