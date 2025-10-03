@@ -1,10 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-	<!-- Library export -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cleanup Content Calendar</title>
@@ -423,10 +419,6 @@
             <button id="generateMonth">Generate Jadwal Bulanan</button>
             <button id="generateYear">Generate Jadwal Tahunan</button>
             <button id="todayBtn">Hari Ini</button>
-			<button id="saveDataBtn">💾 Simpan</button>
-<button id="exportPdfBtn">📄 Export ke PDF</button>
-<button id="exportImgBtn">🖼️ Export ke Gambar</button>
-
         </div>
         
         <!-- Calendar Container -->
@@ -1180,51 +1172,6 @@
         
         // Initialize on load
         document.addEventListener('DOMContentLoaded', init);
-		
-		// === Export ke PDF ===
-document.getElementById("exportPdfBtn").addEventListener("click", () => {
-    const element = document.querySelector(".container");
-    const opt = {
-        margin: 0.5,
-        filename: `Cleanup_Calendar_${currentMonth+1}_${currentYear}.pdf`,
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: "in", format: "a4", orientation: "landscape" }
-    };
-    html2pdf().set(opt).from(element).save();
-});
-
-// === Export ke Gambar ===
-document.getElementById("exportImgBtn").addEventListener("click", () => {
-    const element = document.querySelector(".container");
-    html2canvas(element, { scale: 2 }).then(canvas => {
-        const link = document.createElement("a");
-        link.download = `Cleanup_Calendar_${currentMonth+1}_${currentYear}.png`;
-        link.href = canvas.toDataURL("image/png");
-        link.click();
-    });
-});
-
-// === Simpan ke Google Sheets (via Apps Script Web App) ===
-document.getElementById("saveDataBtn").addEventListener("click", () => {
-    saveData(); // tetap simpan ke localStorage
-
-    // Kirim ke Google Sheets (ubah URL dengan Web App kamu)
-    fetch("https://script.google.com/macros/s/AKfycby5IGp_NUwrPiX3x9EwP_XUNNUu4ME1zM5POjvbwepjbQlXOdmw9V8VI0rXjzz1A3NU/exec", {
-        method: "POST",
-        body: JSON.stringify(scheduleData),
-        headers: { "Content-Type": "application/json" }
-    })
-    .then(res => res.text())
-    .then(data => {
-        alert("✅ Data berhasil disimpan ke Google Sheets!");
-    })
-    .catch(err => {
-        console.error(err);
-        alert("❌ Gagal menyimpan ke Google Sheets.");
-    });
-});
-
     </script>
 </body>
 </html>
