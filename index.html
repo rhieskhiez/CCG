@@ -71,6 +71,7 @@
             padding: 10px 15px;
             background: #f8f9fa;
             border-bottom: 1px solid #dee2e6;
+            position: relative;
         }
         
         .month-nav-button {
@@ -87,6 +88,7 @@
             cursor: pointer;
             transition: all 0.3s;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            touch-action: manipulation;
         }
         
         .month-nav-button:active {
@@ -108,7 +110,9 @@
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             padding: 10px;
-            padding-bottom: 100px; /* Space untuk floating nav */
+            padding-bottom: 100px;
+            touch-action: pan-y;
+            position: relative;
         }
         
         /* Day Headers Container */
@@ -134,6 +138,12 @@
             display: grid;
             grid-template-columns: repeat(7, 1fr);
             gap: 2px;
+            touch-action: manipulation;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
         
         .day-cell-mobile {
@@ -148,9 +158,12 @@
             flex-direction: column;
             overflow: hidden;
             transition: all 0.2s;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
         }
         
-        .day-cell-mobile:active {
+        .day-cell-mobile.tapped {
             transform: scale(0.95);
             box-shadow: 0 2px 5px rgba(102, 126, 234, 0.3);
         }
@@ -176,6 +189,7 @@
             text-align: center;
             line-height: 1;
             margin-bottom: 2px;
+            pointer-events: none;
         }
         
         .day-tasks-mobile {
@@ -186,6 +200,7 @@
             gap: 1px;
             align-items: center;
             justify-content: center;
+            pointer-events: none;
         }
         
         .task-dots-container {
@@ -193,12 +208,14 @@
             gap: 2px;
             flex-wrap: wrap;
             justify-content: center;
+            pointer-events: none;
         }
         
         .task-dot {
             width: 4px;
             height: 4px;
             border-radius: 50%;
+            pointer-events: none;
         }
         
         .task-dot.cleanup {
@@ -223,6 +240,7 @@
             text-align: center;
             font-weight: bold;
             margin-top: 2px;
+            pointer-events: none;
         }
         
         /* Bottom Navigation - Floating Style */
@@ -270,6 +288,7 @@
             border-radius: 12px;
             position: relative;
             animation: fadeInScale 0.3s ease-out backwards;
+            touch-action: manipulation;
         }
         
         .nav-item:nth-child(1) { animation-delay: 0.1s; }
@@ -384,6 +403,7 @@
             transition: all 0.3s;
             font-size: 20px;
             color: #718096;
+            touch-action: manipulation;
         }
         
         .menu-close-btn:hover {
@@ -442,6 +462,7 @@
             align-items: center;
             gap: 10px;
             transition: all 0.2s;
+            touch-action: manipulation;
         }
         
         .menu-button:active {
@@ -505,6 +526,7 @@
             justify-content: center;
             font-size: 20px;
             cursor: pointer;
+            touch-action: manipulation;
         }
         
         .modal-title-mobile {
@@ -580,6 +602,7 @@
             justify-content: center;
             font-size: 16px;
             cursor: pointer;
+            touch-action: manipulation;
         }
         
         .task-action-btn.edit {
@@ -630,6 +653,7 @@
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
+            touch-action: manipulation;
         }
         
         .form-button:active {
@@ -790,6 +814,7 @@
             font-size: 14px;
             font-weight: 500;
             cursor: pointer;
+            touch-action: manipulation;
         }
         
         .config-btn.save {
@@ -800,6 +825,48 @@
         .config-btn.cancel {
             background: #f8f9fa;
             color: #2d3748;
+        }
+        
+        /* Swipe Indicators */
+        .swipe-hint {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 30px;
+            color: #667eea;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 5;
+        }
+        
+        .swipe-hint.left {
+            left: 10px;
+        }
+        
+        .swipe-hint.right {
+            right: 10px;
+        }
+        
+        .swipe-hint.show {
+            opacity: 0.3;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 20px;
+            color: #718096;
+        }
+        
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+            opacity: 0.5;
+        }
+        
+        .empty-state-text {
+            font-size: 14px;
         }
         
         /* Landscape Mode Adjustments */
@@ -987,48 +1054,6 @@
             }
         }
         
-        /* Swipe Indicators */
-        .swipe-hint {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 30px;
-            color: #667eea;
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
-            z-index: 5;
-        }
-        
-        .swipe-hint.left {
-            left: 10px;
-        }
-        
-        .swipe-hint.right {
-            right: 10px;
-        }
-        
-        .swipe-hint.show {
-            opacity: 0.3;
-        }
-        
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 20px;
-            color: #718096;
-        }
-        
-        .empty-state-icon {
-            font-size: 48px;
-            margin-bottom: 10px;
-            opacity: 0.5;
-        }
-        
-        .empty-state-text {
-            font-size: 14px;
-        }
-        
         /* Hover effect untuk desktop/tablet */
         @media (hover: hover) {
             .nav-item:hover {
@@ -1059,15 +1084,6 @@
         .mobile-menu::-webkit-scrollbar {
             width: 0px;
             background: transparent;
-        }
-        
-        /* Prevent text selection on calendar */
-        .calendar-grid-mobile,
-        .day-headers-container {
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
         }
     </style>
 </head>
@@ -1227,9 +1243,17 @@
         let currentYear = new Date().getFullYear();
         let selectedDate = null;
         let googleWebAppUrl = 'https://script.google.com/macros/s/AKfycbyShSkVm3S9PjF0D8dM63wNPNqWO58-4qroYerAlARZTIQ69pAe1gDykb4EZ3LbSzVsWQ/exec';
+        
+        // Swipe detection variables
         let touchStartX = 0;
+        let touchStartY = 0;
         let touchEndX = 0;
-        let menuTouchStartY = 0;
+        let touchEndY = 0;
+        let touchStartTime = 0;
+        let isSwiping = false;
+        let swipeThreshold = 100;
+        let tapThreshold = 10;
+        let timeThreshold = 300;
         
         // Teams Configuration
         const teams = {
@@ -1394,7 +1418,7 @@
             updateMonthDisplay();
         }
         
-        // Create day cell
+        // Create day cell with fixed touch handling
         function createDayCell(day, month, year, isOtherMonth) {
             const cell = document.createElement('div');
             cell.className = 'day-cell-mobile';
@@ -1461,14 +1485,158 @@
             
             cell.appendChild(tasksContainer);
             
-            // Click handler
-            cell.addEventListener('click', () => {
-                if (!isOtherMonth) {
-                    openTaskModal(actualYear, actualMonth, day);
-                }
-            });
+            // Store cell data for click handler
+            cell.dataset.year = actualYear;
+            cell.dataset.month = actualMonth;
+            cell.dataset.day = day;
+            cell.dataset.isOtherMonth = isOtherMonth;
+            
+            // Add tap handler untuk mobile dan click untuk desktop
+            if ('ontouchstart' in window) {
+                // Mobile touch handling
+                cell.addEventListener('touchend', handleCellTap);
+            } else {
+                // Desktop click handling
+                cell.addEventListener('click', function() {
+                    if (!isOtherMonth) {
+                        openTaskModal(actualYear, actualMonth, day);
+                    }
+                });
+            }
             
             return cell;
+        }
+        
+        // Handle cell tap (mobile)
+        function handleCellTap(e) {
+            const cell = e.currentTarget;
+            const isOtherMonth = cell.dataset.isOtherMonth === 'true';
+            
+            if (!isOtherMonth && !isSwiping) {
+                const year = parseInt(cell.dataset.year);
+                const month = parseInt(cell.dataset.month);
+                const day = parseInt(cell.dataset.day);
+                
+                // Add visual feedback
+                cell.classList.add('tapped');
+                setTimeout(() => {
+                    cell.classList.remove('tapped');
+                }, 200);
+                
+                openTaskModal(year, month, day);
+            }
+        }
+        
+        // Setup swipe gestures - FIXED VERSION
+        function setupSwipeGestures() {
+            const container = document.getElementById('calendarContainer');
+            
+            // Calendar swipe handling
+            container.addEventListener('touchstart', (e) => {
+                // Don't interfere if touching a day cell
+                if (e.target.closest('.day-cell-mobile')) {
+                    return;
+                }
+                
+                touchStartX = e.changedTouches[0].screenX;
+                touchStartY = e.changedTouches[0].screenY;
+                touchStartTime = Date.now();
+                isSwiping = false;
+            }, { passive: true });
+            
+            container.addEventListener('touchmove', (e) => {
+                // Don't process if touching a day cell
+                if (e.target.closest('.day-cell-mobile')) {
+                    return;
+                }
+                
+                touchEndX = e.changedTouches[0].screenX;
+                touchEndY = e.changedTouches[0].screenY;
+                
+                const diffX = Math.abs(touchStartX - touchEndX);
+                const diffY = Math.abs(touchStartY - touchEndY);
+                
+                // Only consider horizontal swipes
+                if (diffX > 30 && diffX > diffY) {
+                    isSwiping = true;
+                    
+                    // Show swipe indicators
+                    if (diffX > 50) {
+                        if (touchStartX - touchEndX > 0) {
+                            document.getElementById('swipeRight').classList.add('show');
+                            document.getElementById('swipeLeft').classList.remove('show');
+                        } else {
+                            document.getElementById('swipeLeft').classList.add('show');
+                            document.getElementById('swipeRight').classList.remove('show');
+                        }
+                    }
+                }
+            }, { passive: true });
+            
+            container.addEventListener('touchend', (e) => {
+                // Hide swipe indicators
+                document.getElementById('swipeLeft').classList.remove('show');
+                document.getElementById('swipeRight').classList.remove('show');
+                
+                // Don't process if touching a day cell
+                if (e.target.closest('.day-cell-mobile')) {
+                    isSwiping = false;
+                    return;
+                }
+                
+                const touchEndTime = Date.now();
+                const timeDiff = touchEndTime - touchStartTime;
+                
+                if (isSwiping && timeDiff < 1000) {
+                    const diffX = touchStartX - touchEndX;
+                    const diffY = Math.abs(touchStartY - touchEndY);
+                    
+                    // Only trigger if horizontal swipe is dominant
+                    if (Math.abs(diffX) > swipeThreshold && Math.abs(diffX) > diffY) {
+                        if (diffX > 0) {
+                            navigateNextMonth();
+                        } else {
+                            navigatePrevMonth();
+                        }
+                    }
+                }
+                
+                isSwiping = false;
+            }, { passive: true });
+            
+            // Menu swipe to close
+            const menuHandle = document.querySelector('.menu-handle');
+            let menuStartY = 0;
+            
+            if (menuHandle) {
+                menuHandle.addEventListener('touchstart', (e) => {
+                    menuStartY = e.touches[0].clientY;
+                }, { passive: true });
+                
+                menuHandle.addEventListener('touchmove', (e) => {
+                    const touchY = e.touches[0].clientY;
+                    const diff = touchY - menuStartY;
+                    
+                    if (diff > 0) {
+                        const menu = document.getElementById('mobileMenu');
+                        menu.style.transform = `translateY(${diff}px)`;
+                    }
+                }, { passive: true });
+                
+                menuHandle.addEventListener('touchend', (e) => {
+                    const touchY = e.changedTouches[0].clientY;
+                    const diff = touchY - menuStartY;
+                    const menu = document.getElementById('mobileMenu');
+                    
+                    if (diff > 100) {
+                        closeMenu();
+                    } else {
+                        menu.style.transform = 'translateY(0)';
+                    }
+                    
+                    menuStartY = 0;
+                }, { passive: true });
+            }
         }
         
         // Open task modal
@@ -1546,6 +1714,9 @@
             
             modal.classList.add('active');
         }
+        
+        // Rest of the functions remain the same...
+        // (addTask, editTask, deleteTask, showStats, showGenerateMenu, showExportMenu, etc.)
         
         // Add task
         function addTask() {
@@ -2093,73 +2264,6 @@
                 currentYear++;
             }
             renderCalendar();
-        }
-        
-        // Setup swipe gestures
-        function setupSwipeGestures() {
-            const container = document.getElementById('calendarContainer');
-            
-            container.addEventListener('touchstart', (e) => {
-                touchStartX = e.changedTouches[0].screenX;
-            }, { passive: true });
-            
-            container.addEventListener('touchmove', (e) => {
-                touchEndX = e.changedTouches[0].screenX;
-                
-                const diff = touchStartX - touchEndX;
-                if (Math.abs(diff) > 50) {
-                    if (diff > 0) {
-                        document.getElementById('swipeRight').classList.add('show');
-                        document.getElementById('swipeLeft').classList.remove('show');
-                    } else {
-                        document.getElementById('swipeLeft').classList.add('show');
-                        document.getElementById('swipeRight').classList.remove('show');
-                    }
-                }
-            }, { passive: true });
-            
-            container.addEventListener('touchend', (e) => {
-                document.getElementById('swipeLeft').classList.remove('show');
-                document.getElementById('swipeRight').classList.remove('show');
-                
-                const diff = touchStartX - touchEndX;
-                if (Math.abs(diff) > 100) {
-                    if (diff > 0) {
-                        navigateNextMonth();
-                    } else {
-                        navigatePrevMonth();
-                    }
-                }
-            }, { passive: true });
-            
-            // Menu swipe to close
-            const menuHandle = document.querySelector('.menu-handle');
-            
-            menuHandle.addEventListener('touchstart', (e) => {
-                menuTouchStartY = e.touches[0].clientY;
-            }, { passive: true });
-            
-            menuHandle.addEventListener('touchmove', (e) => {
-                const touchY = e.touches[0].clientY;
-                const diff = touchY - menuTouchStartY;
-                
-                if (diff > 0) {
-                    const menu = document.getElementById('mobileMenu');
-                    menu.style.transform = `translateY(${diff}px)`;
-                }
-            }, { passive: true });
-            
-            menuHandle.addEventListener('touchend', (e) => {
-                const touchY = e.changedTouches[0].clientY;
-                const diff = touchY - menuTouchStartY;
-                const menu = document.getElementById('mobileMenu');
-                
-                if (diff > 100) {
-                    closeMenu();
-                } else {
-                    menu.style.transform = 'translateY(0)';
-                }
-            }, { passive: true });
         }
         
         // Setup event listeners
