@@ -2,7 +2,9 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>Cleanup Content Calendar</title>
     
     <!-- Libraries untuk Export -->
@@ -16,673 +18,986 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        html, body {
+            height: 100%;
+            overflow-x: hidden;
         }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            touch-action: pan-y;
+        }
+        
+        /* Main Container */
+        .app-container {
             min-height: 100vh;
-            padding: 10px;
-        }
-        
-        /* Container */
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
         }
         
-        /* Header */
-        .header {
+        /* Header Mobile */
+        .header-mobile {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 20px;
-            text-align: center;
-        }
-        
-        .header h1 {
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
-        
-        /* Controls */
-        .controls {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-bottom: 2px solid #e9ecef;
-        }
-        
-        .controls button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            background: #667eea;
-            color: white;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-        
-        .controls button:hover {
-            background: #5a67d8;
-            transform: translateY(-2px);
-        }
-        
-        .controls select {
-            padding: 10px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            font-size: 14px;
-            background: white;
-        }
-        
-        /* Save/Export Controls */
-        .export-controls {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
             padding: 15px;
-            background: #e9ecef;
-            border-bottom: 2px solid #dee2e6;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         
-        .export-controls button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s;
+        .header-title {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        
+        .header-subtitle {
+            font-size: 12px;
+            text-align: center;
+            opacity: 0.9;
+        }
+        
+        /* Month Navigation */
+        .month-nav {
             display: flex;
             align-items: center;
-            gap: 5px;
+            justify-content: space-between;
+            padding: 10px 15px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            position: sticky;
+            top: 60px;
+            z-index: 99;
         }
         
-        .btn-save {
+        .month-nav-button {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .month-nav-button:active {
+            transform: scale(0.95);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .month-display {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2d3748;
+            text-align: center;
+            flex: 1;
+        }
+        
+        /* Calendar Container Mobile */
+        .calendar-wrapper {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* Calendar Grid Mobile */
+        .calendar-grid-mobile {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            max-width: 100%;
+            margin: 0 auto;
+        }
+        
+        .day-header-mobile {
+            background: #667eea;
+            color: white;
+            padding: 8px 2px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 11px;
+            position: sticky;
+            top: 110px;
+            z-index: 98;
+        }
+        
+        .day-cell-mobile {
+            aspect-ratio: 1;
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 2px;
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+        
+        .day-cell-mobile:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 5px rgba(102, 126, 234, 0.3);
+        }
+        
+        .day-cell-mobile.other-month {
+            background: #f8f9fa;
+            opacity: 0.4;
+        }
+        
+        .day-cell-mobile.weekend {
+            background: #fff5f5;
+        }
+        
+        .day-cell-mobile.today {
+            border: 2px solid #667eea;
+            background: #f0f4ff;
+        }
+        
+        .day-number-mobile {
+            font-size: 12px;
+            font-weight: bold;
+            color: #2d3748;
+            text-align: center;
+            line-height: 1;
+            margin-bottom: 2px;
+        }
+        
+        .day-tasks-mobile {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+        
+        .task-dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            margin: 0 auto;
+        }
+        
+        .task-dot.cleanup {
+            background: #48bb78;
+        }
+        
+        .task-dot.editing {
+            background: #ed8936;
+        }
+        
+        .task-dot.mrf {
+            background: #9f7aea;
+        }
+        
+        .task-dot.other {
+            background: #718096;
+        }
+        
+        .task-count {
+            font-size: 9px;
+            color: #667eea;
+            text-align: center;
+            font-weight: bold;
+            margin-top: 2px;
+        }
+        
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: sticky;
+            bottom: 0;
+            background: white;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-around;
+            padding: 5px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+        
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            background: none;
+            color: #718096;
+        }
+        
+        .nav-item:active {
+            background: #f8f9fa;
+        }
+        
+        .nav-item.active {
+            color: #667eea;
+        }
+        
+        .nav-icon {
+            font-size: 20px;
+            margin-bottom: 2px;
+        }
+        
+        .nav-label {
+            font-size: 10px;
+            font-weight: 500;
+        }
+        
+        /* Mobile Menu Overlay */
+        .mobile-menu {
+            position: fixed;
+            bottom: -100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 20px 20px 0 0;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+            transition: bottom 0.3s ease;
+            z-index: 1000;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        
+        .mobile-menu.active {
+            bottom: 0;
+        }
+        
+        .menu-handle {
+            width: 40px;
+            height: 4px;
+            background: #cbd5e0;
+            border-radius: 2px;
+            margin: 10px auto;
+        }
+        
+        .menu-title {
+            font-size: 18px;
+            font-weight: bold;
+            padding: 0 20px 15px;
+            color: #2d3748;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .menu-content {
+            padding: 15px;
+        }
+        
+        .menu-section {
+            margin-bottom: 20px;
+        }
+        
+        .menu-section-title {
+            font-size: 12px;
+            color: #718096;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .menu-button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: #f8f9fa;
+            color: #2d3748;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+        }
+        
+        .menu-button:active {
+            background: #e9ecef;
+            transform: scale(0.98);
+        }
+        
+        .menu-button.primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .menu-button.success {
             background: #48bb78;
             color: white;
         }
         
-        .btn-save:hover {
-            background: #38a169;
-        }
-        
-        .btn-export-pdf {
-            background: #e53e3e;
+        .menu-button.danger {
+            background: #f56565;
             color: white;
         }
         
-        .btn-export-pdf:hover {
-            background: #c53030;
-        }
-        
-        .btn-export-image {
-            background: #3182ce;
-            color: white;
-        }
-        
-        .btn-export-image:hover {
-            background: #2c5282;
-        }
-        
-        .btn-sync-google {
-            background: #4285f4;
-            color: white;
-        }
-        
-        .btn-sync-google:hover {
-            background: #357ae8;
-        }
-        
-        .btn-load-google {
-            background: #34a853;
-            color: white;
-        }
-        
-        .btn-load-google:hover {
-            background: #2d8e47;
-        }
-        
-        /* Google Sheets Config Modal */
-        .google-config-modal {
-            display: none;
+        /* Task Modal Mobile */
+        .modal-mobile {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 2000;
-        }
-        
-        .google-config-content {
-            position: relative;
+            right: 0;
+            bottom: 0;
             background: white;
-            margin: 10% auto;
-            padding: 30px;
-            width: 90%;
-            max-width: 500px;
-            border-radius: 15px;
-            animation: slideIn 0.3s;
+            z-index: 2000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            overflow-y: auto;
         }
         
-        .config-input {
+        .modal-mobile.active {
+            transform: translateX(0);
+        }
+        
+        .modal-header-mobile {
+            position: sticky;
+            top: 0;
+            background: white;
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 10;
+        }
+        
+        .modal-back {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: #f8f9fa;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        
+        .modal-title-mobile {
+            flex: 1;
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            color: #2d3748;
+        }
+        
+        .modal-body-mobile {
+            padding: 15px;
+        }
+        
+        .task-list-mobile {
+            margin-bottom: 20px;
+        }
+        
+        .task-item-mobile {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .task-text {
+            flex: 1;
+            font-size: 14px;
+            color: #2d3748;
+            margin-right: 10px;
+        }
+        
+        .task-actions-mobile {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .task-action-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .task-action-btn.edit {
+            background: #4299e1;
+            color: white;
+        }
+        
+        .task-action-btn.delete {
+            background: #f56565;
+            color: white;
+        }
+        
+        /* Add Task Form Mobile */
+        .add-task-mobile {
+            background: #f0f4ff;
+            border-radius: 12px;
+            padding: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 12px;
+        }
+        
+        .form-label {
+            font-size: 12px;
+            color: #718096;
+            margin-bottom: 5px;
+            display: block;
+            font-weight: 600;
+        }
+        
+        .form-input, .form-select {
             width: 100%;
             padding: 10px;
-            margin: 10px 0;
-            border: 2px solid #e9ecef;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+        }
+        
+        .form-button {
+            width: 100%;
+            padding: 12px;
+            background: #48bb78;
+            color: white;
+            border: none;
             border-radius: 8px;
             font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .form-button:active {
+            background: #38a169;
+        }
+        
+        /* Stats Cards Mobile */
+        .stats-container-mobile {
+            padding: 15px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        
+        .stat-card-mobile {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+        
+        .stat-value-mobile {
+            font-size: 20px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 4px;
+        }
+        
+        .stat-label-mobile {
+            font-size: 11px;
+            color: #718096;
+        }
+        
+        /* Loading and Status */
+        .loading-mobile {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 3000;
+            display: none;
+            text-align: center;
+        }
+        
+        .loading-mobile.show {
+            display: block;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            font-size: 14px;
+            color: #4a5568;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #2d3748;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 3000;
+            max-width: 90%;
+            text-align: center;
+        }
+        
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+        
+        .toast.success {
+            background: #48bb78;
+        }
+        
+        .toast.error {
+            background: #f56565;
+        }
+        
+        /* Google Config Modal Mobile */
+        .config-modal-mobile {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 2500;
+            display: none;
+            padding: 20px;
+        }
+        
+        .config-modal-mobile.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .config-content-mobile {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            width: 100%;
+            max-width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .config-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2d3748;
+        }
+        
+        .config-description {
+            font-size: 13px;
+            color: #718096;
+            margin-bottom: 15px;
+            line-height: 1.5;
         }
         
         .config-buttons {
             display: flex;
             gap: 10px;
-            margin-top: 20px;
+            margin-top: 15px;
         }
         
-        .config-buttons button {
+        .config-btn {
             flex: 1;
             padding: 10px;
             border: none;
-            border-radius: 8px;
-            cursor: pointer;
+            border-radius: 6px;
             font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
         }
         
-        /* Calendar Grid */
-        .calendar-container {
-            padding: 20px;
+        .config-btn.save {
+            background: #48bb78;
+            color: white;
         }
         
-        .month-header {
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 20px;
-            font-weight: bold;
+        .config-btn.cancel {
+            background: #f8f9fa;
             color: #2d3748;
         }
         
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 5px;
-            margin-bottom: 20px;
+        /* Landscape Mode Adjustments */
+        @media screen and (orientation: landscape) and (max-height: 500px) {
+            .header-mobile {
+                padding: 10px;
+            }
+            
+            .header-title {
+                font-size: 16px;
+            }
+            
+            .month-nav {
+                padding: 8px 15px;
+                top: 50px;
+            }
+            
+            .day-header-mobile {
+                top: 90px;
+                padding: 5px 2px;
+            }
+            
+            .calendar-wrapper {
+                padding: 5px;
+            }
+            
+            .day-cell-mobile {
+                aspect-ratio: 1.2;
+            }
+            
+            .bottom-nav {
+                padding: 3px 0;
+            }
+            
+            .nav-item {
+                padding: 5px;
+            }
+            
+            .nav-icon {
+                font-size: 18px;
+            }
+            
+            .mobile-menu {
+                max-height: 90vh;
+            }
         }
         
-        .day-header {
-            background: #667eea;
-            color: white;
-            padding: 10px;
-            text-align: center;
-            font-weight: bold;
-            font-size: 12px;
+        /* Tablet Support */
+        @media screen and (min-width: 768px) {
+            .app-container {
+                max-width: 768px;
+                margin: 0 auto;
+                box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            }
+            
+            .calendar-grid-mobile {
+                gap: 4px;
+            }
+            
+            .day-cell-mobile {
+                padding: 4px;
+            }
+            
+            .day-number-mobile {
+                font-size: 14px;
+            }
+            
+            .task-dot {
+                width: 6px;
+                height: 6px;
+            }
+            
+            .stats-container-mobile {
+                grid-template-columns: repeat(4, 1fr);
+            }
         }
         
-        .day-cell {
-            min-height: 120px;
-            background: white;
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
-            padding: 8px;
-            position: relative;
-            cursor: pointer;
-            transition: all 0.3s;
+        /* Desktop View Redirect */
+        @media screen and (min-width: 1024px) {
+            .desktop-notice {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 100vh;
+                padding: 20px;
+                text-align: center;
+            }
+            
+            .desktop-notice-content {
+                max-width: 400px;
+            }
+            
+            .desktop-notice h2 {
+                color: #2d3748;
+                margin-bottom: 10px;
+            }
+            
+            .desktop-notice p {
+                color: #718096;
+                margin-bottom: 20px;
+            }
         }
         
-        .day-cell:hover {
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
-            transform: translateY(-2px);
+        /* Swipe Indicator */
+        .swipe-indicator {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 30px;
+            color: #667eea;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
         }
         
-        .day-cell.other-month {
-            background: #f8f9fa;
+        .swipe-indicator.left {
+            left: 10px;
+        }
+        
+        .swipe-indicator.right {
+            right: 10px;
+        }
+        
+        .swipe-indicator.show {
             opacity: 0.5;
         }
         
-        .day-cell.weekend {
-            background: #fff5f5;
-        }
-        
-        .day-cell.today {
-            border: 2px solid #667eea;
-            background: #f0f4ff;
-        }
-        
-        .day-number {
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: #2d3748;
-        }
-        
-        .day-tasks {
-            font-size: 10px;
-            color: #4a5568;
-            max-height: 80px;
-            overflow-y: auto;
-        }
-        
-        .task-item {
-            background: #e6f3ff;
-            padding: 2px 4px;
-            margin: 2px 0;
-            border-radius: 3px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .task-item.editing {
-            background: #fff3cd;
-        }
-        
-        .task-item.cleanup {
-            background: #d4edda;
-        }
-        
-        .task-item.mrf {
-            background: #e7e3ff;
-        }
-        
-        /* Task Detail Modal */
-        .modal {
-            display: none;
+        /* PWA Install Prompt */
+        .install-prompt {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            animation: fadeIn 0.3s;
-        }
-        
-        .modal-content {
-            position: relative;
+            bottom: 90px;
+            left: 10px;
+            right: 10px;
             background: white;
-            margin: 5% auto;
-            padding: 20px;
-            width: 90%;
-            max-width: 600px;
-            border-radius: 15px;
-            max-height: 80vh;
-            overflow-y: auto;
-            animation: slideIn 0.3s;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 1000;
         }
         
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        .install-prompt.show {
+            display: block;
         }
         
-        @keyframes slideIn {
-            from { transform: translateY(-50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        
-        .modal-header h2 {
+        .install-prompt-text {
+            font-size: 14px;
             color: #2d3748;
+            margin-bottom: 10px;
         }
         
-        .close-btn {
-            font-size: 30px;
-            cursor: pointer;
-            color: #718096;
-            transition: color 0.3s;
-        }
-        
-        .close-btn:hover {
-            color: #2d3748;
-        }
-        
-        .task-list {
-            margin: 10px 0;
-        }
-        
-        .task-list-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            margin: 5px 0;
-            background: #f8f9fa;
-            border-radius: 8px;
-            transition: background 0.3s;
-        }
-        
-        .task-list-item:hover {
-            background: #e9ecef;
-        }
-        
-        .task-actions {
+        .install-prompt-buttons {
             display: flex;
             gap: 10px;
         }
         
-        .btn-edit, .btn-delete {
-            padding: 5px 10px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 12px;
-            transition: all 0.3s;
-        }
-        
-        .btn-edit {
-            background: #4299e1;
-            color: white;
-        }
-        
-        .btn-edit:hover {
-            background: #3182ce;
-        }
-        
-        .btn-delete {
-            background: #f56565;
-            color: white;
-        }
-        
-        .btn-delete:hover {
-            background: #e53e3e;
-        }
-        
-        .add-task-form {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f0f4ff;
-            border-radius: 10px;
-        }
-        
-        .add-task-form input, .add-task-form select {
-            width: 100%;
+        .install-btn {
+            flex: 1;
             padding: 10px;
-            margin: 5px 0;
-            border: 1px solid #cbd5e0;
-            border-radius: 5px;
-        }
-        
-        .add-task-form button {
-            width: 100%;
-            padding: 10px;
-            background: #48bb78;
-            color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
             cursor: pointer;
-            margin-top: 10px;
-            transition: background 0.3s;
         }
         
-        .add-task-form button:hover {
-            background: #38a169;
+        .install-btn.accept {
+            background: #667eea;
+            color: white;
         }
         
-        /* Stats Panel */
-        .stats-panel {
-            padding: 20px;
+        .install-btn.decline {
             background: #f8f9fa;
-            border-top: 2px solid #e9ecef;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-        }
-        
-        .stat-card {
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            transition: transform 0.3s;
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .stat-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #667eea;
-        }
-        
-        .stat-label {
             color: #718096;
-            font-size: 12px;
-            margin-top: 5px;
         }
         
-        /* Sync Status */
-        .sync-status {
-            padding: 10px;
-            background: #f0f4ff;
-            text-align: center;
-            font-size: 12px;
-            color: #4a5568;
+        /* Hide scrollbar but keep functionality */
+        .calendar-wrapper::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
         }
         
-        .sync-status.success {
-            background: #d4edda;
-            color: #155724;
-        }
-        
-        .sync-status.error {
-            background: #f8d7da;
-            color: #721c24;
-        }
-        
-        /* Loading Spinner */
-        .loading {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 20px;
-            color: #667eea;
-            display: none;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            z-index: 3000;
-        }
-        
-        .loading.show {
-            display: block;
-        }
-        
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .calendar-grid {
-                gap: 2px;
-            }
-            
-            .day-cell {
-                min-height: 80px;
-                padding: 5px;
-            }
-            
-            .day-header {
-                font-size: 10px;
-                padding: 5px;
-            }
-            
-            .day-number {
-                font-size: 12px;
-            }
-            
-            .day-tasks {
-                font-size: 8px;
-            }
-            
-            .controls, .export-controls {
-                flex-direction: column;
-            }
-            
-            .controls button, .controls select, .export-controls button {
-                width: 100%;
-            }
-            
-            .modal-content {
-                width: 95%;
-                margin: 10% auto;
-            }
+        .mobile-menu::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
         }
     </style>
 </head>
 <body>
-    <div class="container" id="mainContainer">
+    <div class="app-container">
         <!-- Header -->
-        <div class="header">
-            <h1>📸 Cleanup Content Calendar</h1>
-            <p>Sistem Penjadwalan Konten untuk Tim Cleanup</p>
+        <div class="header-mobile">
+            <div class="header-title">📸 Cleanup Calendar</div>
+            <div class="header-subtitle">Sistem Penjadwalan Konten</div>
         </div>
         
-        <!-- Export Controls -->
-        <div class="export-controls">
-            <button class="btn-save" id="saveLocalBtn">
-                💾 Simpan Lokal
-            </button>
-            <button class="btn-export-pdf" id="exportPdfBtn">
-                📄 Export PDF
-            </button>
-            <button class="btn-export-image" id="exportImageBtn">
-                🖼️ Export Gambar
-            </button>
-            <button class="btn-sync-google" id="syncGoogleBtn">
-                ☁️ Sync ke Google Sheets
-            </button>
-            <button class="btn-load-google" id="loadGoogleBtn">
-                📥 Load dari Google Sheets
-            </button>
-            <button class="btn-save" id="configGoogleBtn">
-                ⚙️ Konfigurasi Google
-            </button>
+        <!-- Month Navigation -->
+        <div class="month-nav">
+            <button class="month-nav-button" id="prevMonthBtn">◀</button>
+            <div class="month-display" id="monthDisplay">Loading...</div>
+            <button class="month-nav-button" id="nextMonthBtn">▶</button>
+            <div class="swipe-indicator left" id="swipeLeft">◀</div>
+            <div class="swipe-indicator right" id="swipeRight">▶</div>
         </div>
         
-        <!-- Sync Status -->
-        <div class="sync-status" id="syncStatus">
-            Status: Belum tersinkronisasi
+        <!-- Calendar -->
+        <div class="calendar-wrapper" id="calendarWrapper">
+            <div class="calendar-grid-mobile" id="calendarGrid">
+                <!-- Calendar will be generated here -->
+            </div>
         </div>
         
-        <!-- Controls -->
-        <div class="controls">
-            <button id="prevMonth">◀ Bulan Sebelumnya</button>
-            <select id="monthSelect"></select>
-            <select id="yearSelect"></select>
-            <button id="nextMonth">Bulan Berikutnya ▶</button>
-            <button id="generateMonth">Generate Jadwal Bulanan</button>
-            <button id="generateYear">Generate Jadwal Tahunan</button>
-            <button id="todayBtn">Hari Ini</button>
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <button class="nav-item active" id="navCalendar">
+                <span class="nav-icon">📅</span>
+                <span class="nav-label">Kalender</span>
+            </button>
+            <button class="nav-item" id="navStats">
+                <span class="nav-icon">📊</span>
+                <span class="nav-label">Statistik</span>
+            </button>
+            <button class="nav-item" id="navGenerate">
+                <span class="nav-icon">🔄</span>
+                <span class="nav-label">Generate</span>
+            </button>
+            <button class="nav-item" id="navExport">
+                <span class="nav-icon">💾</span>
+                <span class="nav-label">Export</span>
+            </button>
+            <button class="nav-item" id="navToday">
+                <span class="nav-icon">📍</span>
+                <span class="nav-label">Hari Ini</span>
+            </button>
+        </nav>
+    </div>
+    
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="menu-handle"></div>
+        <div class="menu-title" id="menuTitle">Menu</div>
+        <div class="menu-content" id="menuContent">
+            <!-- Dynamic content based on menu selection -->
         </div>
-        
-        <!-- Calendar Container -->
-        <div class="calendar-container">
-            <div class="month-header" id="monthHeader"></div>
-            <div class="calendar-grid" id="calendar"></div>
+    </div>
+    
+    <!-- Task Modal -->
+    <div class="modal-mobile" id="taskModal">
+        <div class="modal-header-mobile">
+            <button class="modal-back" id="modalBack">←</button>
+            <div class="modal-title-mobile" id="modalTitle">Detail Tugas</div>
+            <div style="width: 40px;"></div>
         </div>
-        
-        <!-- Statistics Panel -->
-        <div class="stats-panel">
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-value" id="totalTasks">0</div>
-                    <div class="stat-label">Total Tugas Bulan Ini</div>
+        <div class="modal-body-mobile">
+            <div class="task-list-mobile" id="taskList">
+                <!-- Tasks will be listed here -->
+            </div>
+            <div class="add-task-mobile">
+                <h3 style="font-size: 16px; margin-bottom: 12px; color: #2d3748;">Tambah Tugas</h3>
+                <div class="form-group">
+                    <label class="form-label">Tugas</label>
+                    <input type="text" class="form-input" id="taskInput" placeholder="Masukkan tugas...">
                 </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="cleanupCount">0</div>
-                    <div class="stat-label">Cleanup Sessions</div>
+                <div class="form-group">
+                    <label class="form-label">Kategori</label>
+                    <select class="form-select" id="taskCategory">
+                        <option value="cleanup">Cleanup</option>
+                        <option value="editing">Editing</option>
+                        <option value="mrf">MRF</option>
+                        <option value="other">Lainnya</option>
+                    </select>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="editingCount">0</div>
-                    <div class="stat-label">Editing Sessions</div>
+                <div class="form-group">
+                    <label class="form-label">Tim (Opsional)</label>
+                    <select class="form-select" id="taskTeam">
+                        <option value="">Pilih Tim</option>
+                        <option value="lele">Tim Lele - Bengkong</option>
+                        <option value="walrus">Tim Walrus - Tanjung Uma</option>
+                        <option value="oyster">Tim Oyster - Setokok</option>
+                        <option value="dugong">Tim Dugong - Moving</option>
+                        <option value="jellyfish">Tim Jellyfish - Moving</option>
+                    </select>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="weekProgress">0/4</div>
-                    <div class="stat-label">Progress Minggu</div>
-                </div>
+                <button class="form-button" id="addTaskBtn">Tambah Tugas</button>
             </div>
         </div>
     </div>
     
-    <!-- Task Detail Modal -->
-    <div class="modal" id="taskModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modalTitle">Detail Tugas</h2>
-                <span class="close-btn" id="closeModal">&times;</span>
+    <!-- Google Config Modal -->
+    <div class="config-modal-mobile" id="configModal">
+        <div class="config-content-mobile">
+            <div class="config-title">⚙️ Konfigurasi Google Sheets</div>
+            <div class="config-description">
+                Masukkan URL Web App dari Google Apps Script yang sudah Anda deploy untuk sinkronisasi data.
             </div>
-            <div class="task-list" id="taskList"></div>
-            <div class="add-task-form">
-                <h3>Tambah Tugas Baru</h3>
-                <input type="text" id="newTaskInput" placeholder="Masukkan tugas baru...">
-                <select id="taskCategory">
-                    <option value="cleanup">Cleanup</option>
-                    <option value="editing">Editing</option>
-                    <option value="mrf">MRF</option>
-                    <option value="other">Lainnya</option>
-                </select>
-                <select id="teamSelect">
-                    <option value="">Pilih Tim (opsional)</option>
-                    <option value="lele">Tim Lele - Bengkong</option>
-                    <option value="walrus">Tim Walrus - Tanjung Uma</option>
-                    <option value="oyster">Tim Oyster - Setokok</option>
-                    <option value="dugong">Tim Dugong - Moving</option>
-                    <option value="jellyfish">Tim Jellyfish - Moving</option>
-                </select>
-                <button id="addTaskBtn">Tambah Tugas</button>
+            <div class="form-group">
+                <label class="form-label">Web App URL</label>
+                <input type="text" class="form-input" id="googleUrl" 
+                       placeholder="https://script.google.com/macros/s/.../exec">
             </div>
-        </div>
-    </div>
-    
-    <!-- Google Sheets Configuration Modal -->
-    <div class="google-config-modal" id="googleConfigModal">
-        <div class="google-config-content">
-            <h2>⚙️ Konfigurasi Google Sheets</h2>
-            <p style="margin: 10px 0; color: #718096; font-size: 14px;">
-                Masukkan URL Web App dari Google Apps Script yang sudah Anda deploy
-            </p>
-            <input type="text" class="config-input" id="googleWebAppUrl" 
-                   placeholder="https://script.google.com/macros/s/xxx/exec">
-            <p style="margin: 10px 0; color: #718096; font-size: 12px;">
-                📌 Deploy Apps Script terlebih dahulu menggunakan kode yang disediakan
-            </p>
             <div class="config-buttons">
-                <button style="background: #48bb78; color: white;" id="saveConfigBtn">Simpan</button>
-                <button style="background: #718096; color: white;" id="cancelConfigBtn">Batal</button>
+                <button class="config-btn save" id="saveConfigBtn">Simpan</button>
+                <button class="config-btn cancel" id="cancelConfigBtn">Batal</button>
             </div>
         </div>
     </div>
     
-    <!-- Loading Indicator -->
-    <div class="loading" id="loading">⏳ Processing...</div>
+    <!-- Loading -->
+    <div class="loading-mobile" id="loading">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Processing...</div>
+    </div>
+    
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+    
+    <!-- Install Prompt -->
+    <div class="install-prompt" id="installPrompt">
+        <div class="install-prompt-text">
+            Install aplikasi ini untuk akses lebih cepat!
+        </div>
+        <div class="install-prompt-buttons">
+            <button class="install-btn accept" id="installAccept">Install</button>
+            <button class="install-btn decline" id="installDecline">Nanti</button>
+        </div>
+    </div>
     
     <script>
-        // Data struktur untuk menyimpan jadwal
+        // Global Variables
         let scheduleData = {};
         let currentMonth = new Date().getMonth();
         let currentYear = new Date().getFullYear();
         let selectedDate = null;
-        let googleWebAppUrl = 'https://script.google.com/macros/s/AKfycbxbpt7S2USnJKXvU3ymVd8WT-jtfUmtottfAORp3YBKAq9LvwItefHugIfqytaqLsE/exec';
+        let googleWebAppUrl = 'https://script.google.com/macros/s/AKfycbyShSkVm3S9PjF0D8dM63wNPNqWO58-4qroYerAlARZTIQ69pAe1gDykb4EZ3LbSzVsWQ/exec';
+        let touchStartX = 0;
+        let touchEndX = 0;
+        let deferredPrompt;
         
-        // Teams configuration
+        // Teams Configuration
         const teams = {
             lele: { name: "Tim Lele", location: "Bengkong" },
             walrus: { name: "Tim Walrus", location: "Tanjung Uma" },
@@ -691,7 +1006,7 @@
             jellyfish: { name: "Tim Jellyfish", location: "Moving" }
         };
         
-        // Template jadwal mingguan berdasarkan dokumen
+        // Weekly Template
         const weeklyTemplate = {
             1: {
                 tasks: [
@@ -699,9 +1014,9 @@
                     "Cleanup footage",
                     "MRF footage",
                     "Thematic timelapse",
-                    "Select 10 best raw photos & videos [cleanup, MRF]",
+                    "Select 10 best raw photos & videos",
                     "Provide landscape & portrait version",
-                    "Edit plastic adventure of the month + 1 requested simple video"
+                    "Edit plastic adventure of the month"
                 ]
             },
             2: {
@@ -711,7 +1026,7 @@
                     "Thematic timelapse",
                     "MRF footage",
                     "Provide landscape & portrait version",
-                    "Select 10 best raw photos & videos [cleanup, MRF]",
+                    "Select 10 best raw photos & videos",
                     "Edit 2-3 requested simple videos"
                 ]
             },
@@ -722,7 +1037,7 @@
                     "MRF footage",
                     "Thematic timelapse",
                     "Crew highlight",
-                    "Select 10 best raw photos & videos [cleanup, MRF]",
+                    "Select 10 best raw photos & videos",
                     "Provide landscape & portrait version",
                     "Edit 2-3 requested simple videos"
                 ]
@@ -733,51 +1048,25 @@
                     "Cleanup footage with moving crew",
                     "MRF footage",
                     "Thematic timelapse",
-                    "Select 10 best raw photos & videos [cleanup, MRF]",
+                    "Select 10 best raw photos & videos",
                     "Provide landscape & portrait version",
                     "Edit 2-3 requested simple videos"
                 ]
             }
         };
         
-        // Initialize calendar
+        // Initialize App
         function init() {
-            populateSelects();
             loadStoredData();
             loadGoogleConfig();
             renderCalendar();
             setupEventListeners();
+            setupSwipeGestures();
+            checkPWAInstall();
+            updateMonthDisplay();
         }
         
-        // Populate month and year selects
-        function populateSelects() {
-            const monthSelect = document.getElementById('monthSelect');
-            const yearSelect = document.getElementById('yearSelect');
-            
-            const months = [
-                'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-                'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-            ];
-            
-            months.forEach((month, index) => {
-                const option = document.createElement('option');
-                option.value = index;
-                option.textContent = month;
-                monthSelect.appendChild(option);
-            });
-            
-            for (let year = 2024; year <= 2030; year++) {
-                const option = document.createElement('option');
-                option.value = year;
-                option.textContent = year;
-                yearSelect.appendChild(option);
-            }
-            
-            monthSelect.value = currentMonth;
-            yearSelect.value = currentYear;
-        }
-        
-        // Load stored data from localStorage
+        // Load stored data
         function loadStoredData() {
             const stored = localStorage.getItem('scheduleData');
             if (stored) {
@@ -785,71 +1074,61 @@
             }
         }
         
-        // Save data to localStorage
+        // Save data
         function saveData() {
             localStorage.setItem('scheduleData', JSON.stringify(scheduleData));
-            showSyncStatus('Data tersimpan di lokal', 'success');
+            showToast('Data tersimpan', 'success');
         }
         
-        // Load Google configuration
+        // Load Google config
         function loadGoogleConfig() {
             const url = localStorage.getItem('googleWebAppUrl');
             if (url) {
                 googleWebAppUrl = url;
-                document.getElementById('googleWebAppUrl').value = url;
+                document.getElementById('googleUrl').value = url;
             }
         }
         
-        // Save Google configuration
+        // Save Google config
         function saveGoogleConfig() {
-            const url = document.getElementById('googleWebAppUrl').value.trim();
+            const url = document.getElementById('googleUrl').value.trim();
             if (url) {
                 googleWebAppUrl = url;
                 localStorage.setItem('googleWebAppUrl', url);
-                showSyncStatus('Konfigurasi Google Sheets tersimpan', 'success');
+                showToast('Konfigurasi tersimpan', 'success');
             }
         }
         
-        // Show sync status
-        function showSyncStatus(message, type = '') {
-            const statusEl = document.getElementById('syncStatus');
-            statusEl.textContent = message;
-            statusEl.className = `sync-status ${type}`;
-            
-            if (type) {
-                setTimeout(() => {
-                    statusEl.className = 'sync-status';
-                }, 3000);
-            }
-        }
-        
-        // Generate unique key for date
+        // Generate date key
         function getDateKey(year, month, day) {
             return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         }
         
-        // Render calendar grid
-        function renderCalendar() {
-            const calendar = document.getElementById('calendar');
-            const monthHeader = document.getElementById('monthHeader');
+        // Update month display
+        function updateMonthDisplay() {
             const monthNames = [
                 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
                 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
             ];
-            
-            monthHeader.textContent = `${monthNames[currentMonth]} ${currentYear}`;
-            calendar.innerHTML = '';
+            document.getElementById('monthDisplay').textContent = 
+                `${monthNames[currentMonth]} ${currentYear}`;
+        }
+        
+        // Render calendar
+        function renderCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
             
             // Add day headers
             const dayHeaders = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
             dayHeaders.forEach(day => {
-                const dayHeader = document.createElement('div');
-                dayHeader.className = 'day-header';
-                dayHeader.textContent = day;
-                calendar.appendChild(dayHeader);
+                const header = document.createElement('div');
+                header.className = 'day-header-mobile';
+                header.textContent = day;
+                grid.appendChild(header);
             });
             
-            // Calculate days in month
+            // Calculate days
             const firstDay = new Date(currentYear, currentMonth, 1);
             const lastDay = new Date(currentYear, currentMonth + 1, 0);
             const prevLastDay = new Date(currentYear, currentMonth, 0);
@@ -858,7 +1137,7 @@
             const daysInMonth = lastDay.getDate();
             const daysInPrevMonth = prevLastDay.getDate();
             
-            // Add previous month days
+            // Previous month days
             for (let i = startDay - 1; i >= 0; i--) {
                 const dayCell = createDayCell(
                     daysInPrevMonth - i,
@@ -866,17 +1145,17 @@
                     currentYear,
                     true
                 );
-                calendar.appendChild(dayCell);
+                grid.appendChild(dayCell);
             }
             
-            // Add current month days
+            // Current month days
             for (let day = 1; day <= daysInMonth; day++) {
                 const dayCell = createDayCell(day, currentMonth, currentYear, false);
-                calendar.appendChild(dayCell);
+                grid.appendChild(dayCell);
             }
             
-            // Add next month days
-            const totalCells = calendar.children.length - 7; // Subtract headers
+            // Next month days
+            const totalCells = grid.children.length - 7;
             const remainingCells = 35 - totalCells;
             for (let day = 1; day <= remainingCells; day++) {
                 const dayCell = createDayCell(
@@ -885,19 +1164,19 @@
                     currentYear,
                     true
                 );
-                calendar.appendChild(dayCell);
+                grid.appendChild(dayCell);
             }
             
-            updateStats();
+            updateMonthDisplay();
         }
         
-        // Create day cell element
+        // Create day cell
         function createDayCell(day, month, year, isOtherMonth) {
-            const dayCell = document.createElement('div');
-            dayCell.className = 'day-cell';
+            const cell = document.createElement('div');
+            cell.className = 'day-cell-mobile';
             
             if (isOtherMonth) {
-                dayCell.classList.add('other-month');
+                cell.classList.add('other-month');
             }
             
             const actualMonth = month < 0 ? 11 : month > 11 ? 0 : month;
@@ -906,7 +1185,7 @@
             
             // Mark weekends
             if (dayOfWeek === 0 || dayOfWeek === 6) {
-                dayCell.classList.add('weekend');
+                cell.classList.add('weekend');
             }
             
             // Mark today
@@ -916,101 +1195,114 @@
                 actualMonth === today.getMonth() &&
                 actualYear === today.getFullYear()
             ) {
-                dayCell.classList.add('today');
+                cell.classList.add('today');
             }
             
             // Day number
             const dayNumber = document.createElement('div');
-            dayNumber.className = 'day-number';
+            dayNumber.className = 'day-number-mobile';
             dayNumber.textContent = day;
-            dayCell.appendChild(dayNumber);
+            cell.appendChild(dayNumber);
             
-            // Tasks container
-            const dayTasks = document.createElement('div');
-            dayTasks.className = 'day-tasks';
+            // Tasks display
+            const tasksContainer = document.createElement('div');
+            tasksContainer.className = 'day-tasks-mobile';
             
-            // Load tasks for this day
             const dateKey = getDateKey(actualYear, actualMonth, day);
-            if (scheduleData[dateKey]) {
-                scheduleData[dateKey].forEach(task => {
-                    const taskItem = document.createElement('div');
-                    taskItem.className = `task-item ${task.category || 'other'}`;
-                    taskItem.textContent = task.text;
-                    dayTasks.appendChild(taskItem);
+            if (scheduleData[dateKey] && scheduleData[dateKey].length > 0) {
+                const tasks = scheduleData[dateKey];
+                
+                // Show dots for categories
+                const categories = [...new Set(tasks.map(t => t.category))];
+                categories.slice(0, 3).forEach(cat => {
+                    const dot = document.createElement('div');
+                    dot.className = `task-dot ${cat}`;
+                    tasksContainer.appendChild(dot);
                 });
+                
+                // Show task count if more than 3
+                if (tasks.length > 3) {
+                    const count = document.createElement('div');
+                    count.className = 'task-count';
+                    count.textContent = `+${tasks.length - 3}`;
+                    tasksContainer.appendChild(count);
+                }
             }
             
-            dayCell.appendChild(dayTasks);
+            cell.appendChild(tasksContainer);
             
-            // Add click handler
-            dayCell.addEventListener('click', () => {
-                openTaskModal(actualYear, actualMonth, day);
+            // Click handler
+            cell.addEventListener('click', () => {
+                if (!isOtherMonth) {
+                    openTaskModal(actualYear, actualMonth, day);
+                }
             });
             
-            return dayCell;
+            return cell;
         }
         
         // Open task modal
         function openTaskModal(year, month, day) {
-            const modal = document.getElementById('taskModal');
-            const modalTitle = document.getElementById('modalTitle');
-            const taskList = document.getElementById('taskList');
-            
             selectedDate = { year, month, day };
+            const modal = document.getElementById('taskModal');
             const dateKey = getDateKey(year, month, day);
             const dayOfWeek = new Date(year, month, day).getDay();
             const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
             
-            modalTitle.textContent = `${dayNames[dayOfWeek]}, ${day}/${month + 1}/${year}`;
+            document.getElementById('modalTitle').textContent = 
+                `${dayNames[dayOfWeek]}, ${day}/${month + 1}/${year}`;
             
-            // Display existing tasks
+            // Display tasks
+            const taskList = document.getElementById('taskList');
             taskList.innerHTML = '';
-            if (scheduleData[dateKey]) {
+            
+            if (scheduleData[dateKey] && scheduleData[dateKey].length > 0) {
                 scheduleData[dateKey].forEach((task, index) => {
                     const taskItem = document.createElement('div');
-                    taskItem.className = 'task-list-item';
+                    taskItem.className = 'task-item-mobile';
                     
-                    const taskText = document.createElement('span');
+                    const taskText = document.createElement('div');
+                    taskText.className = 'task-text';
                     taskText.textContent = task.text;
                     if (task.team) {
                         taskText.textContent += ` (${teams[task.team].name})`;
                     }
                     
-                    const taskActions = document.createElement('div');
-                    taskActions.className = 'task-actions';
+                    const actions = document.createElement('div');
+                    actions.className = 'task-actions-mobile';
                     
                     const editBtn = document.createElement('button');
-                    editBtn.className = 'btn-edit';
-                    editBtn.textContent = 'Edit';
+                    editBtn.className = 'task-action-btn edit';
+                    editBtn.innerHTML = '✏️';
                     editBtn.onclick = () => editTask(dateKey, index);
                     
                     const deleteBtn = document.createElement('button');
-                    deleteBtn.className = 'btn-delete';
-                    deleteBtn.textContent = 'Hapus';
+                    deleteBtn.className = 'task-action-btn delete';
+                    deleteBtn.innerHTML = '🗑️';
                     deleteBtn.onclick = () => deleteTask(dateKey, index);
                     
-                    taskActions.appendChild(editBtn);
-                    taskActions.appendChild(deleteBtn);
+                    actions.appendChild(editBtn);
+                    actions.appendChild(deleteBtn);
                     
                     taskItem.appendChild(taskText);
-                    taskItem.appendChild(taskActions);
+                    taskItem.appendChild(actions);
                     taskList.appendChild(taskItem);
                 });
             } else {
-                taskList.innerHTML = '<p style="color: #718096; text-align: center;">Belum ada tugas untuk hari ini</p>';
+                taskList.innerHTML = '<p style="text-align: center; color: #718096;">Belum ada tugas</p>';
             }
             
-            modal.style.display = 'block';
+            modal.classList.add('active');
         }
         
-        // Add new task
+        // Add task
         function addTask() {
-            const input = document.getElementById('newTaskInput');
+            const input = document.getElementById('taskInput');
             const category = document.getElementById('taskCategory').value;
-            const team = document.getElementById('teamSelect').value;
+            const team = document.getElementById('taskTeam').value;
             
             if (!input.value.trim()) {
-                alert('Silakan masukkan tugas');
+                showToast('Masukkan tugas terlebih dahulu', 'error');
                 return;
             }
             
@@ -1035,7 +1327,7 @@
             saveData();
             
             input.value = '';
-            document.getElementById('teamSelect').value = '';
+            document.getElementById('taskTeam').value = '';
             
             openTaskModal(selectedDate.year, selectedDate.month, selectedDate.day);
             renderCalendar();
@@ -1056,7 +1348,7 @@
         
         // Delete task
         function deleteTask(dateKey, index) {
-            if (confirm('Apakah Anda yakin ingin menghapus tugas ini?')) {
+            if (confirm('Hapus tugas ini?')) {
                 scheduleData[dateKey].splice(index, 1);
                 
                 if (scheduleData[dateKey].length === 0) {
@@ -1069,66 +1361,172 @@
             }
         }
         
-        // Generate monthly schedule
-        function generateMonthlySchedule() {
-            if (!confirm('Generate jadwal bulanan akan mengganti jadwal yang ada. Lanjutkan?')) {
-                return;
-            }
+        // Show statistics
+        function showStats() {
+            const menuContent = document.getElementById('menuContent');
+            menuContent.innerHTML = '';
             
-            document.getElementById('loading').classList.add('show');
-            
-            // Clear existing schedule for the month
             const year = currentYear;
             const month = currentMonth;
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             
-            // Clear month data
+            let totalTasks = 0;
+            let cleanupCount = 0;
+            let editingCount = 0;
+            let mrfCount = 0;
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateKey = getDateKey(year, month, day);
+                if (scheduleData[dateKey]) {
+                    totalTasks += scheduleData[dateKey].length;
+                    
+                    scheduleData[dateKey].forEach(task => {
+                        if (task.category === 'cleanup') cleanupCount++;
+                        if (task.category === 'editing') editingCount++;
+                        if (task.category === 'mrf') mrfCount++;
+                    });
+                }
+            }
+            
+            const today = new Date();
+            let weekProgress = 0;
+            if (today.getMonth() === month && today.getFullYear() === year) {
+                weekProgress = Math.ceil((today.getDate() + new Date(year, month, 1).getDay()) / 7);
+            }
+            
+            const statsHTML = `
+                <div class="stats-container-mobile">
+                    <div class="stat-card-mobile">
+                        <div class="stat-value-mobile">${totalTasks}</div>
+                        <div class="stat-label-mobile">Total Tugas</div>
+                    </div>
+                    <div class="stat-card-mobile">
+                        <div class="stat-value-mobile">${cleanupCount}</div>
+                        <div class="stat-label-mobile">Cleanup</div>
+                    </div>
+                    <div class="stat-card-mobile">
+                        <div class="stat-value-mobile">${editingCount}</div>
+                        <div class="stat-label-mobile">Editing</div>
+                    </div>
+                    <div class="stat-card-mobile">
+                        <div class="stat-value-mobile">${weekProgress}/4</div>
+                        <div class="stat-label-mobile">Minggu</div>
+                    </div>
+                </div>
+            `;
+            
+            menuContent.innerHTML = statsHTML;
+            
+            document.getElementById('menuTitle').textContent = 'Statistik';
+            document.getElementById('mobileMenu').classList.add('active');
+        }
+        
+        // Show generate menu
+        function showGenerateMenu() {
+            const menuContent = document.getElementById('menuContent');
+            
+            const generateHTML = `
+                <div class="menu-section">
+                    <div class="menu-section-title">Generate Jadwal</div>
+                    <button class="menu-button primary" onclick="generateMonthly()">
+                        📅 Generate Bulanan
+                    </button>
+                    <button class="menu-button primary" onclick="generateYearly()">
+                        📆 Generate Tahunan
+                    </button>
+                </div>
+            `;
+            
+            menuContent.innerHTML = generateHTML;
+            document.getElementById('menuTitle').textContent = 'Generate Jadwal';
+            document.getElementById('mobileMenu').classList.add('active');
+        }
+        
+        // Show export menu
+        function showExportMenu() {
+            const menuContent = document.getElementById('menuContent');
+            
+            const exportHTML = `
+                <div class="menu-section">
+                    <div class="menu-section-title">Simpan & Export</div>
+                    <button class="menu-button success" onclick="saveDataLocal()">
+                        💾 Simpan Lokal
+                    </button>
+                    <button class="menu-button" onclick="exportPDF()">
+                        📄 Export PDF
+                    </button>
+                    <button class="menu-button" onclick="exportImage()">
+                        🖼️ Export Gambar
+                    </button>
+                </div>
+                <div class="menu-section">
+                    <div class="menu-section-title">Sinkronisasi Cloud</div>
+                    <button class="menu-button primary" onclick="syncToGoogle()">
+                        ☁️ Sync ke Google Sheets
+                    </button>
+                    <button class="menu-button success" onclick="loadFromGoogle()">
+                        📥 Load dari Google Sheets
+                    </button>
+                    <button class="menu-button" onclick="showConfigModal()">
+                        ⚙️ Konfigurasi Google
+                    </button>
+                </div>
+            `;
+            
+            menuContent.innerHTML = exportHTML;
+            document.getElementById('menuTitle').textContent = 'Export & Sync';
+            document.getElementById('mobileMenu').classList.add('active');
+        }
+        
+        // Generate monthly schedule
+        function generateMonthly() {
+            if (!confirm('Generate jadwal bulanan akan mengganti jadwal yang ada. Lanjutkan?')) {
+                return;
+            }
+            
+            closeMenu();
+            showLoading('Generating jadwal bulanan...');
+            
+            const year = currentYear;
+            const month = currentMonth;
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            // Clear existing
             for (let day = 1; day <= daysInMonth; day++) {
                 const dateKey = getDateKey(year, month, day);
                 delete scheduleData[dateKey];
             }
             
-            // Determine team rotation for Monday and Wednesday
+            // Generate new schedule
             const teamRotation = ['lele', 'walrus', 'oyster', 'dugong', 'jellyfish'];
             let teamIndex = 0;
             
-            // Generate schedule
             for (let day = 1; day <= daysInMonth; day++) {
                 const date = new Date(year, month, day);
                 const dayOfWeek = date.getDay();
                 const weekOfMonth = Math.ceil((day + new Date(year, month, 1).getDay()) / 7);
                 const dateKey = getDateKey(year, month, day);
                 
-                // Skip weekends
-                if (dayOfWeek === 0 || dayOfWeek === 6) {
-                    continue;
-                }
+                if (dayOfWeek === 0 || dayOfWeek === 6) continue;
                 
                 scheduleData[dateKey] = [];
                 
-                // Friday is always editing day
                 if (dayOfWeek === 5) {
+                    // Friday editing
                     scheduleData[dateKey].push(
                         { text: "Editing Day - Edit requested videos", category: "editing" },
                         { text: "Select & organize weekly best shots", category: "editing" },
                         { text: "Prepare landscape & portrait versions", category: "editing" }
                     );
                     
-                    // Add week-specific editing tasks
                     if (weekOfMonth === 1) {
                         scheduleData[dateKey].push({
                             text: "Edit plastic adventure of the month",
                             category: "editing"
                         });
                     }
-                    continue;
-                }
-                
-                // Get week template
-                const weekTemplate = weeklyTemplate[weekOfMonth] || weeklyTemplate[4];
-                
-                // Monday (1) and Wednesday (3) - assign teams
-                if (dayOfWeek === 1 || dayOfWeek === 3) {
+                } else if (dayOfWeek === 1 || dayOfWeek === 3) {
+                    // Monday/Wednesday
                     const assignedTeam = teamRotation[teamIndex % teamRotation.length];
                     teamIndex++;
                     
@@ -1137,34 +1535,19 @@
                         category: "cleanup",
                         team: assignedTeam
                     });
-                    
-                    // Special case for Bengkong on Tuesday/Thursday
-                    if (assignedTeam === 'lele' && (dayOfWeek === 2 || dayOfWeek === 4)) {
-                        scheduleData[dateKey].push({
-                            text: "River barrier check (usually full)",
-                            category: "cleanup",
-                            team: "lele"
-                        });
-                    }
-                }
-                
-                // Tuesday (2) and Thursday (4) - general tasks
-                if (dayOfWeek === 2 || dayOfWeek === 4) {
+                } else if (dayOfWeek === 2 || dayOfWeek === 4) {
+                    // Tuesday/Thursday
                     scheduleData[dateKey].push(
                         { text: "MRF footage & documentation", category: "mrf" },
                         { text: "Thematic timelapse shooting", category: "cleanup" }
                     );
                     
-                    // River barrier check for Bengkong
-                    if (dayOfWeek === 2 || dayOfWeek === 4) {
-                        scheduleData[dateKey].push({
-                            text: "Bengkong river barrier check",
-                            category: "cleanup"
-                        });
-                    }
+                    scheduleData[dateKey].push({
+                        text: "Bengkong river barrier check",
+                        category: "cleanup"
+                    });
                 }
                 
-                // Add week-specific tasks
                 if (weekOfMonth === 3 && dayOfWeek === 3) {
                     scheduleData[dateKey].push({
                         text: "Crew highlight interview/profile",
@@ -1172,7 +1555,6 @@
                     });
                 }
                 
-                // Moving crew activities (Week 2 and 4)
                 if ((weekOfMonth === 2 || weekOfMonth === 4) && dayOfWeek === 2) {
                     scheduleData[dateKey].push({
                         text: "Cleanup footage with moving crew",
@@ -1186,33 +1568,27 @@
             renderCalendar();
             
             setTimeout(() => {
-                document.getElementById('loading').classList.remove('show');
-                alert('Jadwal bulanan berhasil di-generate!');
+                hideLoading();
+                showToast('Jadwal bulanan berhasil di-generate!', 'success');
             }, 500);
         }
         
         // Generate yearly schedule
-        function generateYearlySchedule() {
-            if (!confirm('Generate jadwal tahunan akan mengganti SEMUA jadwal yang ada untuk tahun ini. Lanjutkan?')) {
+        function generateYearly() {
+            if (!confirm('Generate jadwal tahunan akan mengganti SEMUA jadwal tahun ini. Lanjutkan?')) {
                 return;
             }
             
-            document.getElementById('loading').classList.add('show');
+            closeMenu();
+            showLoading('Generating jadwal tahunan...');
             
-            // Save current month
             const savedMonth = currentMonth;
             
-            // Generate for all 12 months
             for (let month = 0; month < 12; month++) {
-                currentMonth = month;
-                
-                // Generate monthly schedule for each month
                 const year = currentYear;
                 const daysInMonth = new Date(year, month + 1, 0).getDate();
-                
-                // Team rotation continues across months
                 const teamRotation = ['lele', 'walrus', 'oyster', 'dugong', 'jellyfish'];
-                let teamIndex = month * 8; // Approximate team rotations per month
+                let teamIndex = month * 8;
                 
                 for (let day = 1; day <= daysInMonth; day++) {
                     const date = new Date(year, month, day);
@@ -1220,200 +1596,121 @@
                     const weekOfMonth = Math.ceil((day + new Date(year, month, 1).getDay()) / 7);
                     const dateKey = getDateKey(year, month, day);
                     
-                    // Skip weekends
-                    if (dayOfWeek === 0 || dayOfWeek === 6) {
-                        continue;
-                    }
+                    if (dayOfWeek === 0 || dayOfWeek === 6) continue;
                     
                     scheduleData[dateKey] = [];
                     
-                    // Apply same logic as monthly generation
                     if (dayOfWeek === 5) {
-                        // Friday editing
                         scheduleData[dateKey].push(
-                            { text: "Editing Day - Edit requested videos", category: "editing" },
-                            { text: "Select & organize weekly best shots", category: "editing" },
-                            { text: "Prepare landscape & portrait versions", category: "editing" }
+                            { text: "Editing Day", category: "editing" },
+                            { text: "Select & organize shots", category: "editing" }
                         );
                         
                         if (weekOfMonth === 1) {
                             scheduleData[dateKey].push({
-                                text: "Edit plastic adventure of the month",
+                                text: "Monthly video edit",
                                 category: "editing"
                             });
                         }
                     } else if (dayOfWeek === 1 || dayOfWeek === 3) {
-                        // Monday/Wednesday team assignments
                         const assignedTeam = teamRotation[teamIndex % teamRotation.length];
                         teamIndex++;
                         
                         scheduleData[dateKey].push({
-                            text: `Cleanup shooting - ${teams[assignedTeam].name} @ ${teams[assignedTeam].location}`,
+                            text: `Cleanup - ${teams[assignedTeam].name}`,
                             category: "cleanup",
                             team: assignedTeam
                         });
                     } else if (dayOfWeek === 2 || dayOfWeek === 4) {
-                        // Tuesday/Thursday tasks
                         scheduleData[dateKey].push(
-                            { text: "MRF footage & documentation", category: "mrf" },
-                            { text: "Thematic timelapse shooting", category: "cleanup" }
+                            { text: "MRF documentation", category: "mrf" },
+                            { text: "Timelapse shooting", category: "cleanup" }
                         );
-                        
-                        if (dayOfWeek === 2 || dayOfWeek === 4) {
-                            scheduleData[dateKey].push({
-                                text: "Bengkong river barrier check",
-                                category: "cleanup"
-                            });
-                        }
-                    }
-                    
-                    // Special monthly tasks
-                    if (day === 1) {
-                        scheduleData[dateKey].push({
-                            text: "Monthly summary video preparation",
-                            category: "editing"
-                        });
                     }
                 }
             }
             
-            // Restore current month
             currentMonth = savedMonth;
             saveData();
             renderCalendar();
             
             setTimeout(() => {
-                document.getElementById('loading').classList.remove('show');
-                alert('Jadwal tahunan berhasil di-generate!');
+                hideLoading();
+                showToast('Jadwal tahunan berhasil di-generate!', 'success');
             }, 1000);
         }
         
-        // Export to PDF
-        async function exportToPDF() {
-            document.getElementById('loading').classList.add('show');
-            document.getElementById('loading').textContent = '📄 Generating PDF...';
+        // Export functions
+        async function exportPDF() {
+            closeMenu();
+            showLoading('Generating PDF...');
             
             try {
-                // Hide modals and buttons temporarily
-                const exportControls = document.querySelector('.export-controls');
-                const controls = document.querySelector('.controls');
-                exportControls.style.display = 'none';
-                controls.style.display = 'none';
-                
-                // Create canvas from calendar
-                const element = document.getElementById('mainContainer');
+                const element = document.querySelector('.app-container');
                 const canvas = await html2canvas(element, {
                     scale: 2,
-                    logging: false,
-                    useCORS: true
+                    logging: false
                 });
                 
-                // Restore hidden elements
-                exportControls.style.display = 'flex';
-                controls.style.display = 'flex';
-                
-                // Initialize jsPDF
                 const { jsPDF } = window.jspdf;
                 const pdf = new jsPDF({
-                    orientation: 'landscape',
+                    orientation: 'portrait',
                     unit: 'mm',
                     format: 'a4'
                 });
                 
-                // Calculate dimensions
-                const imgWidth = 297; // A4 landscape width in mm
-                const pageHeight = 210; // A4 landscape height in mm
+                const imgWidth = 210;
                 const imgHeight = (canvas.height * imgWidth) / canvas.width;
-                let heightLeft = imgHeight;
-                let position = 0;
                 
-                // Add image to PDF
-                const imgData = canvas.toDataURL('image/png');
-                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                heightLeft -= pageHeight;
+                pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, imgWidth, imgHeight);
                 
-                // Add additional pages if needed
-                while (heightLeft >= 0) {
-                    position = heightLeft - imgHeight;
-                    pdf.addPage();
-                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                    heightLeft -= pageHeight;
-                }
+                const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+                                  'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+                pdf.save(`Calendar_${monthNames[currentMonth]}_${currentYear}.pdf`);
                 
-                // Save PDF
-                const monthNames = [
-                    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-                    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-                ];
-                const filename = `Calendar_${monthNames[currentMonth]}_${currentYear}.pdf`;
-                pdf.save(filename);
-                
-                showSyncStatus('PDF berhasil di-export!', 'success');
+                hideLoading();
+                showToast('PDF berhasil di-export!', 'success');
             } catch (error) {
-                console.error('Error exporting PDF:', error);
-                showSyncStatus('Gagal export PDF', 'error');
-            } finally {
-                document.getElementById('loading').classList.remove('show');
-                document.getElementById('loading').textContent = '⏳ Processing...';
+                hideLoading();
+                showToast('Gagal export PDF', 'error');
             }
         }
         
-        // Export to Image
-        async function exportToImage() {
-            document.getElementById('loading').classList.add('show');
-            document.getElementById('loading').textContent = '🖼️ Generating Image...';
+        async function exportImage() {
+            closeMenu();
+            showLoading('Generating image...');
             
             try {
-                // Hide modals and buttons temporarily
-                const exportControls = document.querySelector('.export-controls');
-                const controls = document.querySelector('.controls');
-                exportControls.style.display = 'none';
-                controls.style.display = 'none';
-                
-                // Create canvas from calendar
-                const element = document.getElementById('mainContainer');
+                const element = document.querySelector('.app-container');
                 const canvas = await html2canvas(element, {
                     scale: 2,
-                    logging: false,
-                    useCORS: true
+                    logging: false
                 });
                 
-                // Restore hidden elements
-                exportControls.style.display = 'flex';
-                controls.style.display = 'flex';
-                
-                // Convert to blob and save
                 canvas.toBlob(function(blob) {
-                    const monthNames = [
-                        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-                        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-                    ];
-                    const filename = `Calendar_${monthNames[currentMonth]}_${currentYear}.png`;
-                    saveAs(blob, filename);
-                    showSyncStatus('Gambar berhasil di-export!', 'success');
+                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+                                      'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+                    saveAs(blob, `Calendar_${monthNames[currentMonth]}_${currentYear}.png`);
+                    hideLoading();
+                    showToast('Gambar berhasil di-export!', 'success');
                 });
             } catch (error) {
-                console.error('Error exporting image:', error);
-                showSyncStatus('Gagal export gambar', 'error');
-            } finally {
-                document.getElementById('loading').classList.remove('show');
-                document.getElementById('loading').textContent = '⏳ Processing...';
+                hideLoading();
+                showToast('Gagal export gambar', 'error');
             }
         }
         
-        // Sync to Google Sheets
         async function syncToGoogle() {
             if (!googleWebAppUrl) {
-                alert('Silakan konfigurasi Google Sheets terlebih dahulu');
-                document.getElementById('googleConfigModal').style.display = 'block';
+                showConfigModal();
                 return;
             }
             
-            document.getElementById('loading').classList.add('show');
-            document.getElementById('loading').textContent = '☁️ Syncing to Google Sheets...';
+            closeMenu();
+            showLoading('Syncing to Google Sheets...');
             
             try {
-                const response = await fetch(googleWebAppUrl, {
+                await fetch(googleWebAppUrl, {
                     method: 'POST',
                     mode: 'no-cors',
                     headers: {
@@ -1426,26 +1723,22 @@
                     })
                 });
                 
-                showSyncStatus('Data berhasil disimpan ke Google Sheets!', 'success');
+                hideLoading();
+                showToast('Data berhasil disync!', 'success');
             } catch (error) {
-                console.error('Error syncing to Google:', error);
-                showSyncStatus('Gagal sync ke Google Sheets', 'error');
-            } finally {
-                document.getElementById('loading').classList.remove('show');
-                document.getElementById('loading').textContent = '⏳ Processing...';
+                hideLoading();
+                showToast('Gagal sync ke Google', 'error');
             }
         }
         
-        // Load from Google Sheets
         async function loadFromGoogle() {
             if (!googleWebAppUrl) {
-                alert('Silakan konfigurasi Google Sheets terlebih dahulu');
-                document.getElementById('googleConfigModal').style.display = 'block';
+                showConfigModal();
                 return;
             }
             
-            document.getElementById('loading').classList.add('show');
-            document.getElementById('loading').textContent = '📥 Loading from Google Sheets...';
+            closeMenu();
+            showLoading('Loading from Google Sheets...');
             
             try {
                 const response = await fetch(`${googleWebAppUrl}?action=load`);
@@ -1455,153 +1748,236 @@
                     scheduleData = data.data;
                     saveData();
                     renderCalendar();
-                    showSyncStatus('Data berhasil dimuat dari Google Sheets!', 'success');
+                    hideLoading();
+                    showToast('Data berhasil dimuat!', 'success');
                 } else {
-                    showSyncStatus('Tidak ada data di Google Sheets', 'error');
+                    hideLoading();
+                    showToast('Tidak ada data', 'error');
                 }
             } catch (error) {
-                console.error('Error loading from Google:', error);
-                showSyncStatus('Gagal memuat dari Google Sheets', 'error');
-            } finally {
-                document.getElementById('loading').classList.remove('show');
-                document.getElementById('loading').textContent = '⏳ Processing...';
+                hideLoading();
+                showToast('Gagal memuat data', 'error');
             }
         }
         
-        // Update statistics
-        function updateStats() {
-            const year = currentYear;
-            const month = currentMonth;
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
+        function saveDataLocal() {
+            closeMenu();
+            saveData();
+        }
+        
+        // UI Helper functions
+        function showLoading(text = 'Processing...') {
+            const loading = document.getElementById('loading');
+            document.querySelector('.loading-text').textContent = text;
+            loading.classList.add('show');
+        }
+        
+        function hideLoading() {
+            document.getElementById('loading').classList.remove('show');
+        }
+        
+        function showToast(message, type = '') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast show ${type}`;
             
-            let totalTasks = 0;
-            let cleanupCount = 0;
-            let editingCount = 0;
-            
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dateKey = getDateKey(year, month, day);
-                if (scheduleData[dateKey]) {
-                    totalTasks += scheduleData[dateKey].length;
-                    
-                    scheduleData[dateKey].forEach(task => {
-                        if (task.category === 'cleanup') cleanupCount++;
-                        if (task.category === 'editing') editingCount++;
-                    });
-                }
-            }
-            
-            // Calculate week progress
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        function closeMenu() {
+            document.getElementById('mobileMenu').classList.remove('active');
+        }
+        
+        function showConfigModal() {
+            closeMenu();
+            document.getElementById('configModal').classList.add('active');
+        }
+        
+        function closeConfigModal() {
+            document.getElementById('configModal').classList.remove('active');
+        }
+        
+        // Navigate to today
+        function navigateToToday() {
             const today = new Date();
-            let weekProgress = 0;
-            if (today.getMonth() === month && today.getFullYear() === year) {
-                weekProgress = Math.ceil((today.getDate() + new Date(year, month, 1).getDay()) / 7);
+            currentMonth = today.getMonth();
+            currentYear = today.getFullYear();
+            renderCalendar();
+            showToast('Navigasi ke hari ini', 'success');
+        }
+        
+        // Navigate months
+        function navigatePrevMonth() {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
             }
+            renderCalendar();
+        }
+        
+        function navigateNextMonth() {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            renderCalendar();
+        }
+        
+        // Setup swipe gestures
+        function setupSwipeGestures() {
+            const calendarWrapper = document.getElementById('calendarWrapper');
             
-            document.getElementById('totalTasks').textContent = totalTasks;
-            document.getElementById('cleanupCount').textContent = cleanupCount;
-            document.getElementById('editingCount').textContent = editingCount;
-            document.getElementById('weekProgress').textContent = `${weekProgress}/4`;
+            calendarWrapper.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+            });
+            
+            calendarWrapper.addEventListener('touchmove', (e) => {
+                touchEndX = e.changedTouches[0].screenX;
+                
+                const diff = touchStartX - touchEndX;
+                if (Math.abs(diff) > 50) {
+                    if (diff > 0) {
+                        document.getElementById('swipeRight').classList.add('show');
+                        document.getElementById('swipeLeft').classList.remove('show');
+                    } else {
+                        document.getElementById('swipeLeft').classList.add('show');
+                        document.getElementById('swipeRight').classList.remove('show');
+                    }
+                }
+            });
+            
+            calendarWrapper.addEventListener('touchend', (e) => {
+                document.getElementById('swipeLeft').classList.remove('show');
+                document.getElementById('swipeRight').classList.remove('show');
+                
+                const diff = touchStartX - touchEndX;
+                if (Math.abs(diff) > 100) {
+                    if (diff > 0) {
+                        navigateNextMonth();
+                    } else {
+                        navigatePrevMonth();
+                    }
+                }
+            });
+        }
+        
+        // Check PWA install
+        function checkPWAInstall() {
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                
+                // Show install prompt after 30 seconds
+                setTimeout(() => {
+                    document.getElementById('installPrompt').classList.add('show');
+                }, 30000);
+            });
         }
         
         // Setup event listeners
         function setupEventListeners() {
-            // Month navigation
-            document.getElementById('prevMonth').addEventListener('click', () => {
-                currentMonth--;
-                if (currentMonth < 0) {
-                    currentMonth = 11;
-                    currentYear--;
-                }
-                document.getElementById('monthSelect').value = currentMonth;
-                document.getElementById('yearSelect').value = currentYear;
-                renderCalendar();
+            // Navigation
+            document.getElementById('prevMonthBtn').addEventListener('click', navigatePrevMonth);
+            document.getElementById('nextMonthBtn').addEventListener('click', navigateNextMonth);
+            
+            // Bottom nav
+            document.getElementById('navCalendar').addEventListener('click', () => {
+                document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+                document.getElementById('navCalendar').classList.add('active');
+                closeMenu();
             });
             
-            document.getElementById('nextMonth').addEventListener('click', () => {
-                currentMonth++;
-                if (currentMonth > 11) {
-                    currentMonth = 0;
-                    currentYear++;
-                }
-                document.getElementById('monthSelect').value = currentMonth;
-                document.getElementById('yearSelect').value = currentYear;
-                renderCalendar();
+            document.getElementById('navStats').addEventListener('click', () => {
+                document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+                document.getElementById('navStats').classList.add('active');
+                showStats();
             });
             
-            // Month/Year selects
-            document.getElementById('monthSelect').addEventListener('change', (e) => {
-                currentMonth = parseInt(e.target.value);
-                renderCalendar();
+            document.getElementById('navGenerate').addEventListener('click', () => {
+                document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+                document.getElementById('navGenerate').classList.add('active');
+                showGenerateMenu();
             });
             
-            document.getElementById('yearSelect').addEventListener('change', (e) => {
-                currentYear = parseInt(e.target.value);
-                renderCalendar();
+            document.getElementById('navExport').addEventListener('click', () => {
+                document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+                document.getElementById('navExport').classList.add('active');
+                showExportMenu();
             });
             
-            // Today button
-            document.getElementById('todayBtn').addEventListener('click', () => {
-                const today = new Date();
-                currentMonth = today.getMonth();
-                currentYear = today.getFullYear();
-                document.getElementById('monthSelect').value = currentMonth;
-                document.getElementById('yearSelect').value = currentYear;
-                renderCalendar();
+            document.getElementById('navToday').addEventListener('click', () => {
+                document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+                document.getElementById('navCalendar').classList.add('active');
+                navigateToToday();
             });
             
-            // Generate buttons
-            document.getElementById('generateMonth').addEventListener('click', generateMonthlySchedule);
-            document.getElementById('generateYear').addEventListener('click', generateYearlySchedule);
-            
-            // Export/Save buttons
-            document.getElementById('saveLocalBtn').addEventListener('click', saveData);
-            document.getElementById('exportPdfBtn').addEventListener('click', exportToPDF);
-            document.getElementById('exportImageBtn').addEventListener('click', exportToImage);
-            document.getElementById('syncGoogleBtn').addEventListener('click', syncToGoogle);
-            document.getElementById('loadGoogleBtn').addEventListener('click', loadFromGoogle);
-            document.getElementById('configGoogleBtn').addEventListener('click', () => {
-                document.getElementById('googleConfigModal').style.display = 'block';
-            });
-            
-            // Google config modal
-            document.getElementById('saveConfigBtn').addEventListener('click', () => {
-                saveGoogleConfig();
-                document.getElementById('googleConfigModal').style.display = 'none';
-            });
-            
-            document.getElementById('cancelConfigBtn').addEventListener('click', () => {
-                document.getElementById('googleConfigModal').style.display = 'none';
-            });
-            
-            // Modal controls
-            document.getElementById('closeModal').addEventListener('click', () => {
-                document.getElementById('taskModal').style.display = 'none';
+            // Task modal
+            document.getElementById('modalBack').addEventListener('click', () => {
+                document.getElementById('taskModal').classList.remove('active');
             });
             
             document.getElementById('addTaskBtn').addEventListener('click', addTask);
             
-            // Close modal on outside click
-            window.addEventListener('click', (e) => {
-                const modal = document.getElementById('taskModal');
-                const googleModal = document.getElementById('googleConfigModal');
-                if (e.target === modal) {
-                    modal.style.display = 'none';
-                }
-                if (e.target === googleModal) {
-                    googleModal.style.display = 'none';
-                }
-            });
-            
-            // Enter key for adding task
-            document.getElementById('newTaskInput').addEventListener('keypress', (e) => {
+            document.getElementById('taskInput').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     addTask();
                 }
+            });
+            
+            // Menu close on swipe down
+            const menuHandle = document.querySelector('.menu-handle');
+            let menuTouchStart = 0;
+            
+            menuHandle.addEventListener('touchstart', (e) => {
+                menuTouchStart = e.touches[0].clientY;
+            });
+            
+            menuHandle.addEventListener('touchmove', (e) => {
+                const touchY = e.touches[0].clientY;
+                if (touchY - menuTouchStart > 50) {
+                    closeMenu();
+                }
+            });
+            
+            // Config modal
+            document.getElementById('saveConfigBtn').addEventListener('click', () => {
+                saveGoogleConfig();
+                closeConfigModal();
+            });
+            
+            document.getElementById('cancelConfigBtn').addEventListener('click', closeConfigModal);
+            
+            // Install prompt
+            document.getElementById('installAccept').addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    deferredPrompt = null;
+                    document.getElementById('installPrompt').classList.remove('show');
+                }
+            });
+            
+            document.getElementById('installDecline').addEventListener('click', () => {
+                document.getElementById('installPrompt').classList.remove('show');
             });
         }
         
         // Initialize on load
         document.addEventListener('DOMContentLoaded', init);
+        
+        // Make functions globally accessible
+        window.generateMonthly = generateMonthly;
+        window.generateYearly = generateYearly;
+        window.exportPDF = exportPDF;
+        window.exportImage = exportImage;
+        window.syncToGoogle = syncToGoogle;
+        window.loadFromGoogle = loadFromGoogle;
+        window.saveDataLocal = saveDataLocal;
+        window.showConfigModal = showConfigModal;
     </script>
 </body>
 </html>
