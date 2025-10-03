@@ -724,6 +724,9 @@
         }
         
         function renderCalendar() {
+            // **LOGGING:** Menampilkan data yang akan dirender
+            console.log("Rendering calendar with data:", scheduleData);
+            
             const calendar = document.getElementById('calendar');
             const monthHeader = document.getElementById('monthHeader');
             const monthNames = [
@@ -799,7 +802,7 @@
             
             const today = new Date();
             if (
-                day === today.getDate() &&
+                actualDate.getDate() === today.getDate() &&
                 actualMonth === today.getMonth() &&
                 actualYear === today.getFullYear()
             ) {
@@ -815,7 +818,8 @@
             dayTasks.className = 'day-tasks';
             
             const dateKey = getDateKey(actualYear, actualMonth, actualDate.getDate());
-            if (scheduleData[dateKey]) {
+            
+            if (scheduleData && scheduleData[dateKey]) { // **PERBAIKAN:** Memastikan scheduleData tidak null
                 scheduleData[dateKey].forEach(task => {
                     const taskItem = document.createElement('div');
                     taskItem.className = `task-item ${task.category || 'other'}`;
@@ -846,7 +850,7 @@
             modalTitle.textContent = `${dayNames[dayOfWeek]}, ${day}/${month + 1}/${year}`;
             
             taskList.innerHTML = '';
-            if (scheduleData[dateKey]) {
+            if (scheduleData && scheduleData[dateKey]) {
                 scheduleData[dateKey].forEach((task, index) => {
                     const taskItem = document.createElement('div');
                     taskItem.className = 'task-list-item';
@@ -1126,7 +1130,7 @@
             
             for (let day = 1; day <= daysInMonth; day++) {
                 const dateKey = getDateKey(year, month, day);
-                if (scheduleData[dateKey]) {
+                if (scheduleData && scheduleData[dateKey]) {
                     totalTasks += scheduleData[dateKey].length;
                     
                     scheduleData[dateKey].forEach(task => {
@@ -1299,7 +1303,7 @@
             const url = document.getElementById('sheetsURL').value.trim();
             
             if (!url) {
-                if(autoSaveTimer) clearTimeout(autoSaveTimer); // Mencegah alert saat auto-save
+                if(autoSaveTimer) clearTimeout(autoSaveTimer); 
                 else alert('Silakan masukkan URL Google Apps Script terlebih dahulu');
                 return;
             }
@@ -1361,16 +1365,19 @@
                 if (response.ok) {
                     const data = await response.json();
                     
-                    if (data && Object.keys(data).length > 0) {
+                    // **LOGGING:** Menampilkan data mentah dari Google Sheets
+                    console.log("Data mentah diterima dari Google Sheets:", data);
+
+                    if (data && typeof data === 'object' && Object.keys(data).length > 0) {
                         if (silent || confirm('Load data akan mengganti data yang ada. Lanjutkan?')) {
                             scheduleData = data;
-                            renderCalendar();
                             updateConnectionStatus(true);
                             if (!silent) alert('Data berhasil diload dari Google Sheets!');
-                            console.log('Data berhasil diload dari Google Sheets!');
+                            console.log('Data berhasil diproses dan disimpan ke scheduleData!');
                         }
                     } else {
-                        if (!silent) alert('Tidak ada data ditemukan di Google Sheets');
+                        if (!silent) alert('Tidak ada data ditemukan atau format data salah di Google Sheets');
+                        scheduleData = {}; // Kosongkan data jika tidak ada apa-apa
                         updateConnectionStatus(true);
                     }
                 } else {
@@ -1382,6 +1389,7 @@
                 updateConnectionStatus(false);
             } finally {
                 document.getElementById('loading').classList.remove('show');
+                renderCalendar(); // **PENTING:** Panggil renderCalendar di sini agar kalender selalu diperbarui
             }
         }
         
@@ -1409,6 +1417,7 @@
             });
             
             document.getElementById('monthSelect').addEventListener('change', (e) => {
+
                 currentMonth = parseInt(e.target.value);
                 renderCalendar();
             });
