@@ -224,47 +224,267 @@
             margin-top: 2px;
         }
         
-        /* Bottom Navigation */
-        .bottom-nav {
-            background: white;
-            border-top: 1px solid #e9ecef;
-            display: flex;
-            justify-content: space-around;
-            padding: 5px 0;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .nav-item {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 8px 5px;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: none;
-            background: none;
-            color: #718096;
-        }
-        
-        .nav-item:active {
-            background: #f8f9fa;
-        }
-        
-        .nav-item.active {
-            color: #667eea;
-        }
-        
-        .nav-icon {
-            font-size: 20px;
-            margin-bottom: 2px;
-        }
-        
-        .nav-label {
-            font-size: 10px;
-            font-weight: 500;
-        }
-        
+/* Bottom Navigation - Floating Style */
+.bottom-nav {
+    position: fixed;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    border-radius: 20px;
+    display: flex;
+    justify-content: space-around;
+    padding: 8px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05);
+    z-index: 100;
+    width: calc(100% - 30px);
+    max-width: 400px;
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.95);
+}
+
+.nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: none;
+    background: none;
+    color: #718096;
+    border-radius: 12px;
+    position: relative;
+}
+
+.nav-item:active {
+    transform: scale(0.95);
+}
+
+.nav-item.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.nav-item.active .nav-icon {
+    transform: translateY(-2px);
+}
+
+.nav-icon {
+    font-size: 22px;
+    margin-bottom: 4px;
+    transition: all 0.3s;
+}
+
+.nav-label {
+    font-size: 10px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+/* Floating indicator dot */
+.nav-item.active::before {
+    content: '';
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 6px;
+    height: 6px;
+    background: #48bb78;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 0.7;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Adjust calendar container untuk floating nav */
+.calendar-container {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 10px;
+    padding-bottom: 90px; /* Space untuk floating nav */
+}
+
+/* Toast position adjustment */
+.toast {
+    position: fixed;
+    bottom: 100px; /* Dinaikkan karena floating nav */
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #2d3748;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 3000;
+    max-width: 90%;
+    text-align: center;
+}
+
+/* Mobile menu adjustment */
+.mobile-menu {
+    position: fixed;
+    bottom: -100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+    transition: bottom 0.3s ease;
+    z-index: 1000;
+    max-height: calc(100vh - 120px); /* Kurangi space untuk floating nav */
+    overflow-y: auto;
+}
+
+/* Landscape Mode Adjustments */
+@media screen and (orientation: landscape) and (max-height: 600px) {
+    .bottom-nav {
+        bottom: 10px;
+        padding: 5px;
+        width: calc(100% - 20px);
+    }
+    
+    .nav-item {
+        padding: 8px 5px;
+    }
+    
+    .nav-icon {
+        font-size: 20px;
+    }
+    
+    .nav-label {
+        font-size: 9px;
+    }
+    
+    .calendar-container {
+        padding-bottom: 70px;
+    }
+    
+    .toast {
+        bottom: 80px;
+    }
+}
+
+/* Tablet Support */
+@media screen and (min-width: 768px) {
+    .bottom-nav {
+        max-width: 500px;
+        padding: 10px;
+        bottom: 20px;
+    }
+    
+    .nav-item {
+        padding: 12px 8px;
+    }
+    
+    .nav-icon {
+        font-size: 24px;
+    }
+    
+    .nav-label {
+        font-size: 11px;
+    }
+    
+    .calendar-container {
+        padding-bottom: 100px;
+    }
+}
+
+/* Extra visual enhancement untuk floating effect */
+.bottom-nav::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
+    padding: 1px;
+    background: linear-gradient(135deg, #667eea20, #764ba220);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+}
+
+/* Hover effect untuk desktop/tablet */
+@media (hover: hover) {
+    .nav-item:hover {
+        background: rgba(102, 126, 234, 0.1);
+        transform: translateY(-2px);
+    }
+    
+    .nav-item.active:hover {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        transform: translateY(-2px);
+    }
+}
+
+/* Safe area untuk iPhone dengan notch */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+    .bottom-nav {
+        bottom: calc(15px + env(safe-area-inset-bottom));
+        padding-bottom: calc(8px + env(safe-area-inset-bottom));
+    }
+    
+    .calendar-container {
+        padding-bottom: calc(90px + env(safe-area-inset-bottom));
+    }
+}        
+		
+		/* Animation saat load */
+.bottom-nav {
+    animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateX(-50%) translateY(100px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Stagger animation untuk nav items */
+.nav-item {
+    animation: fadeInScale 0.3s ease-out backwards;
+}
+
+.nav-item:nth-child(1) { animation-delay: 0.1s; }
+.nav-item:nth-child(2) { animation-delay: 0.15s; }
+.nav-item:nth-child(3) { animation-delay: 0.2s; }
+.nav-item:nth-child(4) { animation-delay: 0.25s; }
+.nav-item:nth-child(5) { animation-delay: 0.3s; }
+
+@keyframes fadeInScale {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+		
         /* Mobile Menu Overlay */
         .mobile-menu {
             position: fixed;
