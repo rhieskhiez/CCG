@@ -3,11 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cleanup Content Calendar (Vercel Edition)</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <title>Cleanup Content Calendar</title>
+    
+    <!-- Libraries untuk Export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    
     <style>
-        /* ... CSS Anda tetap sama, tidak perlu diubah ... */
+        /* Reset dan Base Styles */
         * {
             margin: 0;
             padding: 0;
@@ -21,6 +25,7 @@
             padding: 10px;
         }
         
+        /* Container */
         .container {
             max-width: 1400px;
             margin: 0 auto;
@@ -30,6 +35,7 @@
             overflow: hidden;
         }
         
+        /* Header */
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -42,6 +48,7 @@
             margin-bottom: 10px;
         }
         
+        /* Controls */
         .controls {
             display: flex;
             flex-wrap: wrap;
@@ -68,22 +75,6 @@
             transform: translateY(-2px);
         }
         
-        .controls button.export-btn {
-            background: #48bb78;
-        }
-        
-        .controls button.export-btn:hover {
-            background: #38a169;
-        }
-        
-        .controls button.danger-btn {
-            background: #f56565;
-        }
-        
-        .controls button.danger-btn:hover {
-            background: #e53e3e;
-        }
-        
         .controls select {
             padding: 10px;
             border: 2px solid #e9ecef;
@@ -92,6 +83,122 @@
             background: white;
         }
         
+        /* Save/Export Controls */
+        .export-controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            padding: 15px;
+            background: #e9ecef;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        .export-controls button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-save {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .btn-save:hover {
+            background: #38a169;
+        }
+        
+        .btn-export-pdf {
+            background: #e53e3e;
+            color: white;
+        }
+        
+        .btn-export-pdf:hover {
+            background: #c53030;
+        }
+        
+        .btn-export-image {
+            background: #3182ce;
+            color: white;
+        }
+        
+        .btn-export-image:hover {
+            background: #2c5282;
+        }
+        
+        .btn-sync-google {
+            background: #4285f4;
+            color: white;
+        }
+        
+        .btn-sync-google:hover {
+            background: #357ae8;
+        }
+        
+        .btn-load-google {
+            background: #34a853;
+            color: white;
+        }
+        
+        .btn-load-google:hover {
+            background: #2d8e47;
+        }
+        
+        /* Google Sheets Config Modal */
+        .google-config-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+        }
+        
+        .google-config-content {
+            position: relative;
+            background: white;
+            margin: 10% auto;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 15px;
+            animation: slideIn 0.3s;
+        }
+        
+        .config-input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .config-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .config-buttons button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        /* Calendar Grid */
         .calendar-container {
             padding: 20px;
         }
@@ -185,6 +292,7 @@
             background: #e7e3ff;
         }
         
+        /* Task Detail Modal */
         .modal {
             display: none;
             position: fixed;
@@ -300,7 +408,7 @@
             border-radius: 10px;
         }
         
-        .add-task-form input, .add-task-form select, .add-task-form textarea {
+        .add-task-form input, .add-task-form select {
             width: 100%;
             padding: 10px;
             margin: 5px 0;
@@ -324,6 +432,7 @@
             background: #38a169;
         }
         
+        /* Stats Panel */
         .stats-panel {
             padding: 20px;
             background: #f8f9fa;
@@ -360,87 +469,46 @@
             margin-top: 5px;
         }
         
-        .google-sheets-section {
-            padding: 15px;
-            background: #e6f7ff;
-            border-radius: 10px;
-            margin-top: 15px;
-        }
-        
-        .google-sheets-section h3 {
-            color: #2d3748;
-            margin-bottom: 10px;
-        }
-        
-        .google-sheets-section input {
-            width: 100%;
+        /* Sync Status */
+        .sync-status {
             padding: 10px;
-            margin: 5px 0;
-            border: 1px solid #cbd5e0;
-            border-radius: 5px;
-        }
-        
-        .google-sheets-section .button-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        
-        .google-sheets-section button {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .btn-sync {
-            background: #4299e1;
-            color: white;
-        }
-        
-        .btn-sync:hover {
-            background: #3182ce;
-        }
-        
-        .connection-status {
-            padding: 8px;
-            margin: 10px 0;
-            border-radius: 5px;
+            background: #f0f4ff;
             text-align: center;
             font-size: 12px;
+            color: #4a5568;
         }
         
-        .connection-status.connected {
+        .sync-status.success {
             background: #d4edda;
             color: #155724;
         }
         
-        .connection-status.disconnected {
+        .sync-status.error {
             background: #f8d7da;
             color: #721c24;
         }
         
+        /* Loading Spinner */
         .loading {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            font-size: 18px;
+            font-size: 20px;
             color: #667eea;
             display: none;
-            z-index: 2000;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 3000;
         }
         
         .loading.show {
             display: block;
         }
         
+        /* Responsive Design */
         @media (max-width: 768px) {
             .calendar-grid {
                 gap: 2px;
@@ -464,11 +532,11 @@
                 font-size: 8px;
             }
             
-            .controls {
+            .controls, .export-controls {
                 flex-direction: column;
             }
             
-            .controls button, .controls select {
+            .controls button, .controls select, .export-controls button {
                 width: 100%;
             }
             
@@ -480,31 +548,58 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="container" id="mainContainer">
+        <!-- Header -->
         <div class="header">
             <h1>📸 Cleanup Content Calendar</h1>
             <p>Sistem Penjadwalan Konten untuk Tim Cleanup</p>
         </div>
         
+        <!-- Export Controls -->
+        <div class="export-controls">
+            <button class="btn-save" id="saveLocalBtn">
+                💾 Simpan Lokal
+            </button>
+            <button class="btn-export-pdf" id="exportPdfBtn">
+                📄 Export PDF
+            </button>
+            <button class="btn-export-image" id="exportImageBtn">
+                🖼️ Export Gambar
+            </button>
+            <button class="btn-sync-google" id="syncGoogleBtn">
+                ☁️ Sync ke Google Sheets
+            </button>
+            <button class="btn-load-google" id="loadGoogleBtn">
+                📥 Load dari Google Sheets
+            </button>
+            <button class="btn-save" id="configGoogleBtn">
+                ⚙️ Konfigurasi Google
+            </button>
+        </div>
+        
+        <!-- Sync Status -->
+        <div class="sync-status" id="syncStatus">
+            Status: Belum tersinkronisasi
+        </div>
+        
+        <!-- Controls -->
         <div class="controls">
             <button id="prevMonth">◀ Bulan Sebelumnya</button>
             <select id="monthSelect"></select>
             <select id="yearSelect"></select>
             <button id="nextMonth">Bulan Berikutnya ▶</button>
-            <button id="todayBtn">Hari Ini</button>
             <button id="generateMonth">Generate Jadwal Bulanan</button>
             <button id="generateYear">Generate Jadwal Tahunan</button>
-            <button id="exportPDF" class="export-btn">📄 Export PDF</button>
-            <button id="exportImage" class="export-btn">🖼️ Export Gambar</button>
-            <button id="exportJSON" class="export-btn">💾 Export JSON</button>
-            <button id="importJSON" class="export-btn">📥 Import JSON</button>
-            </div>
+            <button id="todayBtn">Hari Ini</button>
+        </div>
         
+        <!-- Calendar Container -->
         <div class="calendar-container">
             <div class="month-header" id="monthHeader"></div>
             <div class="calendar-grid" id="calendar"></div>
         </div>
         
+        <!-- Statistics Panel -->
         <div class="stats-panel">
             <div class="stats-grid">
                 <div class="stat-card">
@@ -527,6 +622,7 @@
         </div>
     </div>
     
+    <!-- Task Detail Modal -->
     <div class="modal" id="taskModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -555,19 +651,38 @@
             </div>
         </div>
     </div>
-        
-    <input type="file" id="fileInput" accept=".json" style="display: none;">
     
+    <!-- Google Sheets Configuration Modal -->
+    <div class="google-config-modal" id="googleConfigModal">
+        <div class="google-config-content">
+            <h2>⚙️ Konfigurasi Google Sheets</h2>
+            <p style="margin: 10px 0; color: #718096; font-size: 14px;">
+                Masukkan URL Web App dari Google Apps Script yang sudah Anda deploy
+            </p>
+            <input type="text" class="config-input" id="googleWebAppUrl" 
+                   placeholder="https://script.google.com/macros/s/xxx/exec">
+            <p style="margin: 10px 0; color: #718096; font-size: 12px;">
+                📌 Deploy Apps Script terlebih dahulu menggunakan kode yang disediakan
+            </p>
+            <div class="config-buttons">
+                <button style="background: #48bb78; color: white;" id="saveConfigBtn">Simpan</button>
+                <button style="background: #718096; color: white;" id="cancelConfigBtn">Batal</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Loading Indicator -->
     <div class="loading" id="loading">⏳ Processing...</div>
     
     <script>
-        // Data storage (in-memory for current session)
+        // Data struktur untuk menyimpan jadwal
         let scheduleData = {};
         let currentMonth = new Date().getMonth();
         let currentYear = new Date().getFullYear();
         let selectedDate = null;
-        let autoSaveTimer = null;
+        let googleWebAppUrl = 'https://script.google.com/macros/s/AKfycbxbpt7S2USnJKXvU3ymVd8WT-jtfUmtottfAORp3YBKAq9LvwItefHugIfqytaqLsE/exec';
         
+        // Teams configuration
         const teams = {
             lele: { name: "Tim Lele", location: "Bengkong" },
             walrus: { name: "Tim Walrus", location: "Tanjung Uma" },
@@ -576,6 +691,7 @@
             jellyfish: { name: "Tim Jellyfish", location: "Moving" }
         };
         
+        // Template jadwal mingguan berdasarkan dokumen
         const weeklyTemplate = {
             1: {
                 tasks: [
@@ -624,32 +740,16 @@
             }
         };
         
+        // Initialize calendar
         function init() {
             populateSelects();
+            loadStoredData();
+            loadGoogleConfig();
+            renderCalendar();
             setupEventListeners();
-            // **MODIFIKASI:** Panggil autoLoadFromVercel saat memulai
-            autoLoadFromVercel();
-        }
-
-        async function autoLoadFromVercel() {
-            console.log("Attempting to auto-load data from Vercel KV...");
-            await loadFromVercel(true); 
         }
         
-        function debounce(func, delay) {
-            return function(...args) {
-                clearTimeout(autoSaveTimer);
-                autoSaveTimer = setTimeout(() => {
-                    func.apply(this, args);
-                }, delay);
-            };
-        }
-        
-        const autoSaveChanges = debounce(async () => {
-            console.log("Auto-saving changes to Vercel KV...");
-            await saveToVercel();
-        }, 2000); 
-        
+        // Populate month and year selects
         function populateSelects() {
             const monthSelect = document.getElementById('monthSelect');
             const yearSelect = document.getElementById('yearSelect');
@@ -677,13 +777,59 @@
             yearSelect.value = currentYear;
         }
         
+        // Load stored data from localStorage
+        function loadStoredData() {
+            const stored = localStorage.getItem('scheduleData');
+            if (stored) {
+                scheduleData = JSON.parse(stored);
+            }
+        }
+        
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('scheduleData', JSON.stringify(scheduleData));
+            showSyncStatus('Data tersimpan di lokal', 'success');
+        }
+        
+        // Load Google configuration
+        function loadGoogleConfig() {
+            const url = localStorage.getItem('googleWebAppUrl');
+            if (url) {
+                googleWebAppUrl = url;
+                document.getElementById('googleWebAppUrl').value = url;
+            }
+        }
+        
+        // Save Google configuration
+        function saveGoogleConfig() {
+            const url = document.getElementById('googleWebAppUrl').value.trim();
+            if (url) {
+                googleWebAppUrl = url;
+                localStorage.setItem('googleWebAppUrl', url);
+                showSyncStatus('Konfigurasi Google Sheets tersimpan', 'success');
+            }
+        }
+        
+        // Show sync status
+        function showSyncStatus(message, type = '') {
+            const statusEl = document.getElementById('syncStatus');
+            statusEl.textContent = message;
+            statusEl.className = `sync-status ${type}`;
+            
+            if (type) {
+                setTimeout(() => {
+                    statusEl.className = 'sync-status';
+                }, 3000);
+            }
+        }
+        
+        // Generate unique key for date
         function getDateKey(year, month, day) {
             return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         }
         
+        // Render calendar grid
         function renderCalendar() {
-            console.log("Rendering calendar with data:", scheduleData);
-            
             const calendar = document.getElementById('calendar');
             const monthHeader = document.getElementById('monthHeader');
             const monthNames = [
@@ -694,6 +840,7 @@
             monthHeader.textContent = `${monthNames[currentMonth]} ${currentYear}`;
             calendar.innerHTML = '';
             
+            // Add day headers
             const dayHeaders = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
             dayHeaders.forEach(day => {
                 const dayHeader = document.createElement('div');
@@ -702,6 +849,7 @@
                 calendar.appendChild(dayHeader);
             });
             
+            // Calculate days in month
             const firstDay = new Date(currentYear, currentMonth, 1);
             const lastDay = new Date(currentYear, currentMonth + 1, 0);
             const prevLastDay = new Date(currentYear, currentMonth, 0);
@@ -710,6 +858,7 @@
             const daysInMonth = lastDay.getDate();
             const daysInPrevMonth = prevLastDay.getDate();
             
+            // Add previous month days
             for (let i = startDay - 1; i >= 0; i--) {
                 const dayCell = createDayCell(
                     daysInPrevMonth - i,
@@ -720,13 +869,15 @@
                 calendar.appendChild(dayCell);
             }
             
+            // Add current month days
             for (let day = 1; day <= daysInMonth; day++) {
                 const dayCell = createDayCell(day, currentMonth, currentYear, false);
                 calendar.appendChild(dayCell);
             }
             
-            const totalCells = calendar.children.length - 7;
-            const remainingCells = 42 - totalCells; 
+            // Add next month days
+            const totalCells = calendar.children.length - 7; // Subtract headers
+            const remainingCells = 35 - totalCells;
             for (let day = 1; day <= remainingCells; day++) {
                 const dayCell = createDayCell(
                     day,
@@ -740,6 +891,7 @@
             updateStats();
         }
         
+        // Create day cell element
         function createDayCell(day, month, year, isOtherMonth) {
             const dayCell = document.createElement('div');
             dayCell.className = 'day-cell';
@@ -748,35 +900,38 @@
                 dayCell.classList.add('other-month');
             }
             
-            const actualDate = new Date(year, month, day);
-            const actualMonth = actualDate.getMonth();
-            const actualYear = actualDate.getFullYear();
-            const dayOfWeek = actualDate.getDay();
+            const actualMonth = month < 0 ? 11 : month > 11 ? 0 : month;
+            const actualYear = month < 0 ? year - 1 : month > 11 ? year + 1 : year;
+            const dayOfWeek = new Date(actualYear, actualMonth, day).getDay();
             
+            // Mark weekends
             if (dayOfWeek === 0 || dayOfWeek === 6) {
                 dayCell.classList.add('weekend');
             }
             
+            // Mark today
             const today = new Date();
             if (
-                actualDate.getDate() === today.getDate() &&
+                day === today.getDate() &&
                 actualMonth === today.getMonth() &&
                 actualYear === today.getFullYear()
             ) {
                 dayCell.classList.add('today');
             }
             
+            // Day number
             const dayNumber = document.createElement('div');
             dayNumber.className = 'day-number';
-            dayNumber.textContent = actualDate.getDate();
+            dayNumber.textContent = day;
             dayCell.appendChild(dayNumber);
             
+            // Tasks container
             const dayTasks = document.createElement('div');
             dayTasks.className = 'day-tasks';
             
-            const dateKey = getDateKey(actualYear, actualMonth, actualDate.getDate());
-            
-            if (scheduleData && scheduleData[dateKey]) { 
+            // Load tasks for this day
+            const dateKey = getDateKey(actualYear, actualMonth, day);
+            if (scheduleData[dateKey]) {
                 scheduleData[dateKey].forEach(task => {
                     const taskItem = document.createElement('div');
                     taskItem.className = `task-item ${task.category || 'other'}`;
@@ -787,13 +942,15 @@
             
             dayCell.appendChild(dayTasks);
             
+            // Add click handler
             dayCell.addEventListener('click', () => {
-                openTaskModal(actualYear, actualMonth, actualDate.getDate());
+                openTaskModal(actualYear, actualMonth, day);
             });
             
             return dayCell;
         }
         
+        // Open task modal
         function openTaskModal(year, month, day) {
             const modal = document.getElementById('taskModal');
             const modalTitle = document.getElementById('modalTitle');
@@ -806,8 +963,9 @@
             
             modalTitle.textContent = `${dayNames[dayOfWeek]}, ${day}/${month + 1}/${year}`;
             
+            // Display existing tasks
             taskList.innerHTML = '';
-            if (scheduleData && scheduleData[dateKey]) {
+            if (scheduleData[dateKey]) {
                 scheduleData[dateKey].forEach((task, index) => {
                     const taskItem = document.createElement('div');
                     taskItem.className = 'task-list-item';
@@ -845,6 +1003,7 @@
             modal.style.display = 'block';
         }
         
+        // Add new task
         function addTask() {
             const input = document.getElementById('newTaskInput');
             const category = document.getElementById('taskCategory').value;
@@ -873,27 +1032,29 @@
             }
             
             scheduleData[dateKey].push(taskData);
+            saveData();
             
             input.value = '';
             document.getElementById('teamSelect').value = '';
             
             openTaskModal(selectedDate.year, selectedDate.month, selectedDate.day);
             renderCalendar();
-            autoSaveChanges();
         }
         
+        // Edit task
         function editTask(dateKey, index) {
             const task = scheduleData[dateKey][index];
             const newText = prompt('Edit tugas:', task.text);
             
             if (newText !== null && newText.trim()) {
                 scheduleData[dateKey][index].text = newText.trim();
+                saveData();
                 openTaskModal(selectedDate.year, selectedDate.month, selectedDate.day);
                 renderCalendar();
-                autoSaveChanges();
             }
         }
         
+        // Delete task
         function deleteTask(dateKey, index) {
             if (confirm('Apakah Anda yakin ingin menghapus tugas ini?')) {
                 scheduleData[dateKey].splice(index, 1);
@@ -902,12 +1063,13 @@
                     delete scheduleData[dateKey];
                 }
                 
+                saveData();
                 openTaskModal(selectedDate.year, selectedDate.month, selectedDate.day);
                 renderCalendar();
-                autoSaveChanges();
             }
         }
         
+        // Generate monthly schedule
         function generateMonthlySchedule() {
             if (!confirm('Generate jadwal bulanan akan mengganti jadwal yang ada. Lanjutkan?')) {
                 return;
@@ -915,30 +1077,36 @@
             
             document.getElementById('loading').classList.add('show');
             
+            // Clear existing schedule for the month
             const year = currentYear;
             const month = currentMonth;
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             
+            // Clear month data
             for (let day = 1; day <= daysInMonth; day++) {
                 const dateKey = getDateKey(year, month, day);
                 delete scheduleData[dateKey];
             }
             
+            // Determine team rotation for Monday and Wednesday
             const teamRotation = ['lele', 'walrus', 'oyster', 'dugong', 'jellyfish'];
             let teamIndex = 0;
             
+            // Generate schedule
             for (let day = 1; day <= daysInMonth; day++) {
                 const date = new Date(year, month, day);
                 const dayOfWeek = date.getDay();
                 const weekOfMonth = Math.ceil((day + new Date(year, month, 1).getDay()) / 7);
                 const dateKey = getDateKey(year, month, day);
                 
+                // Skip weekends
                 if (dayOfWeek === 0 || dayOfWeek === 6) {
                     continue;
                 }
                 
                 scheduleData[dateKey] = [];
                 
+                // Friday is always editing day
                 if (dayOfWeek === 5) {
                     scheduleData[dateKey].push(
                         { text: "Editing Day - Edit requested videos", category: "editing" },
@@ -946,6 +1114,7 @@
                         { text: "Prepare landscape & portrait versions", category: "editing" }
                     );
                     
+                    // Add week-specific editing tasks
                     if (weekOfMonth === 1) {
                         scheduleData[dateKey].push({
                             text: "Edit plastic adventure of the month",
@@ -955,6 +1124,10 @@
                     continue;
                 }
                 
+                // Get week template
+                const weekTemplate = weeklyTemplate[weekOfMonth] || weeklyTemplate[4];
+                
+                // Monday (1) and Wednesday (3) - assign teams
                 if (dayOfWeek === 1 || dayOfWeek === 3) {
                     const assignedTeam = teamRotation[teamIndex % teamRotation.length];
                     teamIndex++;
@@ -964,16 +1137,34 @@
                         category: "cleanup",
                         team: assignedTeam
                     });
+                    
+                    // Special case for Bengkong on Tuesday/Thursday
+                    if (assignedTeam === 'lele' && (dayOfWeek === 2 || dayOfWeek === 4)) {
+                        scheduleData[dateKey].push({
+                            text: "River barrier check (usually full)",
+                            category: "cleanup",
+                            team: "lele"
+                        });
+                    }
                 }
                 
+                // Tuesday (2) and Thursday (4) - general tasks
                 if (dayOfWeek === 2 || dayOfWeek === 4) {
                     scheduleData[dateKey].push(
                         { text: "MRF footage & documentation", category: "mrf" },
-                        { text: "Thematic timelapse shooting", category: "cleanup" },
-                        { text: "Bengkong river barrier check", category: "cleanup" }
+                        { text: "Thematic timelapse shooting", category: "cleanup" }
                     );
+                    
+                    // River barrier check for Bengkong
+                    if (dayOfWeek === 2 || dayOfWeek === 4) {
+                        scheduleData[dateKey].push({
+                            text: "Bengkong river barrier check",
+                            category: "cleanup"
+                        });
+                    }
                 }
                 
+                // Add week-specific tasks
                 if (weekOfMonth === 3 && dayOfWeek === 3) {
                     scheduleData[dateKey].push({
                         text: "Crew highlight interview/profile",
@@ -981,6 +1172,7 @@
                     });
                 }
                 
+                // Moving crew activities (Week 2 and 4)
                 if ((weekOfMonth === 2 || weekOfMonth === 4) && dayOfWeek === 2) {
                     scheduleData[dateKey].push({
                         text: "Cleanup footage with moving crew",
@@ -990,15 +1182,16 @@
                 }
             }
             
+            saveData();
             renderCalendar();
             
             setTimeout(() => {
                 document.getElementById('loading').classList.remove('show');
                 alert('Jadwal bulanan berhasil di-generate!');
             }, 500);
-            autoSaveChanges();
         }
         
+        // Generate yearly schedule
         function generateYearlySchedule() {
             if (!confirm('Generate jadwal tahunan akan mengganti SEMUA jadwal yang ada untuk tahun ini. Lanjutkan?')) {
                 return;
@@ -1006,14 +1199,20 @@
             
             document.getElementById('loading').classList.add('show');
             
+            // Save current month
             const savedMonth = currentMonth;
             
+            // Generate for all 12 months
             for (let month = 0; month < 12; month++) {
+                currentMonth = month;
+                
+                // Generate monthly schedule for each month
                 const year = currentYear;
                 const daysInMonth = new Date(year, month + 1, 0).getDate();
                 
+                // Team rotation continues across months
                 const teamRotation = ['lele', 'walrus', 'oyster', 'dugong', 'jellyfish'];
-                let teamIndex = month * 8;
+                let teamIndex = month * 8; // Approximate team rotations per month
                 
                 for (let day = 1; day <= daysInMonth; day++) {
                     const date = new Date(year, month, day);
@@ -1021,13 +1220,16 @@
                     const weekOfMonth = Math.ceil((day + new Date(year, month, 1).getDay()) / 7);
                     const dateKey = getDateKey(year, month, day);
                     
+                    // Skip weekends
                     if (dayOfWeek === 0 || dayOfWeek === 6) {
                         continue;
                     }
                     
                     scheduleData[dateKey] = [];
                     
+                    // Apply same logic as monthly generation
                     if (dayOfWeek === 5) {
+                        // Friday editing
                         scheduleData[dateKey].push(
                             { text: "Editing Day - Edit requested videos", category: "editing" },
                             { text: "Select & organize weekly best shots", category: "editing" },
@@ -1041,6 +1243,7 @@
                             });
                         }
                     } else if (dayOfWeek === 1 || dayOfWeek === 3) {
+                        // Monday/Wednesday team assignments
                         const assignedTeam = teamRotation[teamIndex % teamRotation.length];
                         teamIndex++;
                         
@@ -1050,13 +1253,21 @@
                             team: assignedTeam
                         });
                     } else if (dayOfWeek === 2 || dayOfWeek === 4) {
+                        // Tuesday/Thursday tasks
                         scheduleData[dateKey].push(
                             { text: "MRF footage & documentation", category: "mrf" },
-                            { text: "Thematic timelapse shooting", category: "cleanup" },
-                            { text: "Bengkong river barrier check", category: "cleanup" }
+                            { text: "Thematic timelapse shooting", category: "cleanup" }
                         );
+                        
+                        if (dayOfWeek === 2 || dayOfWeek === 4) {
+                            scheduleData[dateKey].push({
+                                text: "Bengkong river barrier check",
+                                category: "cleanup"
+                            });
+                        }
                     }
                     
+                    // Special monthly tasks
                     if (day === 1) {
                         scheduleData[dateKey].push({
                             text: "Monthly summary video preparation",
@@ -1066,16 +1277,198 @@
                 }
             }
             
+            // Restore current month
             currentMonth = savedMonth;
+            saveData();
             renderCalendar();
             
             setTimeout(() => {
                 document.getElementById('loading').classList.remove('show');
                 alert('Jadwal tahunan berhasil di-generate!');
             }, 1000);
-            autoSaveChanges();
         }
         
+        // Export to PDF
+        async function exportToPDF() {
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('loading').textContent = '📄 Generating PDF...';
+            
+            try {
+                // Hide modals and buttons temporarily
+                const exportControls = document.querySelector('.export-controls');
+                const controls = document.querySelector('.controls');
+                exportControls.style.display = 'none';
+                controls.style.display = 'none';
+                
+                // Create canvas from calendar
+                const element = document.getElementById('mainContainer');
+                const canvas = await html2canvas(element, {
+                    scale: 2,
+                    logging: false,
+                    useCORS: true
+                });
+                
+                // Restore hidden elements
+                exportControls.style.display = 'flex';
+                controls.style.display = 'flex';
+                
+                // Initialize jsPDF
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({
+                    orientation: 'landscape',
+                    unit: 'mm',
+                    format: 'a4'
+                });
+                
+                // Calculate dimensions
+                const imgWidth = 297; // A4 landscape width in mm
+                const pageHeight = 210; // A4 landscape height in mm
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                let heightLeft = imgHeight;
+                let position = 0;
+                
+                // Add image to PDF
+                const imgData = canvas.toDataURL('image/png');
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+                
+                // Add additional pages if needed
+                while (heightLeft >= 0) {
+                    position = heightLeft - imgHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+                
+                // Save PDF
+                const monthNames = [
+                    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+                ];
+                const filename = `Calendar_${monthNames[currentMonth]}_${currentYear}.pdf`;
+                pdf.save(filename);
+                
+                showSyncStatus('PDF berhasil di-export!', 'success');
+            } catch (error) {
+                console.error('Error exporting PDF:', error);
+                showSyncStatus('Gagal export PDF', 'error');
+            } finally {
+                document.getElementById('loading').classList.remove('show');
+                document.getElementById('loading').textContent = '⏳ Processing...';
+            }
+        }
+        
+        // Export to Image
+        async function exportToImage() {
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('loading').textContent = '🖼️ Generating Image...';
+            
+            try {
+                // Hide modals and buttons temporarily
+                const exportControls = document.querySelector('.export-controls');
+                const controls = document.querySelector('.controls');
+                exportControls.style.display = 'none';
+                controls.style.display = 'none';
+                
+                // Create canvas from calendar
+                const element = document.getElementById('mainContainer');
+                const canvas = await html2canvas(element, {
+                    scale: 2,
+                    logging: false,
+                    useCORS: true
+                });
+                
+                // Restore hidden elements
+                exportControls.style.display = 'flex';
+                controls.style.display = 'flex';
+                
+                // Convert to blob and save
+                canvas.toBlob(function(blob) {
+                    const monthNames = [
+                        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+                    ];
+                    const filename = `Calendar_${monthNames[currentMonth]}_${currentYear}.png`;
+                    saveAs(blob, filename);
+                    showSyncStatus('Gambar berhasil di-export!', 'success');
+                });
+            } catch (error) {
+                console.error('Error exporting image:', error);
+                showSyncStatus('Gagal export gambar', 'error');
+            } finally {
+                document.getElementById('loading').classList.remove('show');
+                document.getElementById('loading').textContent = '⏳ Processing...';
+            }
+        }
+        
+        // Sync to Google Sheets
+        async function syncToGoogle() {
+            if (!googleWebAppUrl) {
+                alert('Silakan konfigurasi Google Sheets terlebih dahulu');
+                document.getElementById('googleConfigModal').style.display = 'block';
+                return;
+            }
+            
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('loading').textContent = '☁️ Syncing to Google Sheets...';
+            
+            try {
+                const response = await fetch(googleWebAppUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'save',
+                        data: scheduleData,
+                        timestamp: new Date().toISOString()
+                    })
+                });
+                
+                showSyncStatus('Data berhasil disimpan ke Google Sheets!', 'success');
+            } catch (error) {
+                console.error('Error syncing to Google:', error);
+                showSyncStatus('Gagal sync ke Google Sheets', 'error');
+            } finally {
+                document.getElementById('loading').classList.remove('show');
+                document.getElementById('loading').textContent = '⏳ Processing...';
+            }
+        }
+        
+        // Load from Google Sheets
+        async function loadFromGoogle() {
+            if (!googleWebAppUrl) {
+                alert('Silakan konfigurasi Google Sheets terlebih dahulu');
+                document.getElementById('googleConfigModal').style.display = 'block';
+                return;
+            }
+            
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('loading').textContent = '📥 Loading from Google Sheets...';
+            
+            try {
+                const response = await fetch(`${googleWebAppUrl}?action=load`);
+                const data = await response.json();
+                
+                if (data && data.data) {
+                    scheduleData = data.data;
+                    saveData();
+                    renderCalendar();
+                    showSyncStatus('Data berhasil dimuat dari Google Sheets!', 'success');
+                } else {
+                    showSyncStatus('Tidak ada data di Google Sheets', 'error');
+                }
+            } catch (error) {
+                console.error('Error loading from Google:', error);
+                showSyncStatus('Gagal memuat dari Google Sheets', 'error');
+            } finally {
+                document.getElementById('loading').classList.remove('show');
+                document.getElementById('loading').textContent = '⏳ Processing...';
+            }
+        }
+        
+        // Update statistics
         function updateStats() {
             const year = currentYear;
             const month = currentMonth;
@@ -1087,7 +1480,7 @@
             
             for (let day = 1; day <= daysInMonth; day++) {
                 const dateKey = getDateKey(year, month, day);
-                if (scheduleData && scheduleData[dateKey]) {
+                if (scheduleData[dateKey]) {
                     totalTasks += scheduleData[dateKey].length;
                     
                     scheduleData[dateKey].forEach(task => {
@@ -1097,6 +1490,7 @@
                 }
             }
             
+            // Calculate week progress
             const today = new Date();
             let weekProgress = 0;
             if (today.getMonth() === month && today.getFullYear() === year) {
@@ -1109,85 +1503,9 @@
             document.getElementById('weekProgress').textContent = `${weekProgress}/4`;
         }
         
-        async function exportToPDF() {
-            // ... Fungsi exportToPDF tetap sama ...
-        }
-        
-        async function exportToImage() {
-            // ... Fungsi exportToImage tetap sama ...
-        }
-        
-        function exportToJSON() {
-            // ... Fungsi exportToJSON tetap sama ...
-        }
-        
-        function importFromJSON() {
-            // ... Fungsi importFromJSON tetap sama ...
-        }
-        
-        function handleFileImport(event) {
-            // ... Fungsi handleFileImport tetap sama ...
-        }
-
-        // **MODIFIKASI: Fungsi untuk menyimpan data ke Vercel**
-        async function saveToVercel() {
-            document.getElementById('loading').classList.add('show');
-            try {
-                const response = await fetch('/api/saveData', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ data: scheduleData }),
-                });
-
-                if (!response.ok) {
-                    throw new Error('Gagal menyimpan data ke Vercel KV');
-                }
-
-                const result = await response.json();
-                if (result.status === "success") {
-                    console.log("Data berhasil disimpan ke Vercel KV!");
-                } else {
-                     throw new Error(result.message || 'Gagal menyimpan data');
-                }
-            } catch (error) {
-                console.error('Error saving to Vercel:', error);
-                alert('Terjadi kesalahan saat menyimpan data.');
-            } finally {
-                document.getElementById('loading').classList.remove('show');
-            }
-        }
-        
-        // **MODIFIKASI: Fungsi untuk memuat data dari Vercel**
-        async function loadFromVercel(silent = false) {
-            document.getElementById('loading').classList.add('show');
-            try {
-                const response = await fetch('/api/loadData');
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log("Data mentah diterima dari Vercel KV:", data);
-
-                    if (data && typeof data === 'object' && Object.keys(data).length > 0) {
-                        scheduleData = data;
-                        if (!silent) alert('Data berhasil diload dari Vercel!');
-                        console.log('Data berhasil diproses!');
-                    } else {
-                        scheduleData = {};
-                        console.log('Tidak ada data ditemukan di Vercel KV.');
-                    }
-                } else {
-                    throw new Error('Gagal memuat data, status: ' + response.status);
-                }
-            } catch (error) {
-                console.error('Error loading from Vercel:', error);
-                if (!silent) alert('Terjadi kesalahan saat memuat data.');
-            } finally {
-                document.getElementById('loading').classList.remove('show');
-                renderCalendar(); 
-            }
-        }
-        
+        // Setup event listeners
         function setupEventListeners() {
+            // Month navigation
             document.getElementById('prevMonth').addEventListener('click', () => {
                 currentMonth--;
                 if (currentMonth < 0) {
@@ -1210,6 +1528,7 @@
                 renderCalendar();
             });
             
+            // Month/Year selects
             document.getElementById('monthSelect').addEventListener('change', (e) => {
                 currentMonth = parseInt(e.target.value);
                 renderCalendar();
@@ -1220,6 +1539,7 @@
                 renderCalendar();
             });
             
+            // Today button
             document.getElementById('todayBtn').addEventListener('click', () => {
                 const today = new Date();
                 currentMonth = today.getMonth();
@@ -1229,29 +1549,50 @@
                 renderCalendar();
             });
             
+            // Generate buttons
             document.getElementById('generateMonth').addEventListener('click', generateMonthlySchedule);
             document.getElementById('generateYear').addEventListener('click', generateYearlySchedule);
             
-            document.getElementById('exportPDF').addEventListener('click', exportToPDF);
-            document.getElementById('exportImage').addEventListener('click', exportToImage);
-            document.getElementById('exportJSON').addEventListener('click', exportToJSON);
-            document.getElementById('importJSON').addEventListener('click', importFromJSON);
+            // Export/Save buttons
+            document.getElementById('saveLocalBtn').addEventListener('click', saveData);
+            document.getElementById('exportPdfBtn').addEventListener('click', exportToPDF);
+            document.getElementById('exportImageBtn').addEventListener('click', exportToImage);
+            document.getElementById('syncGoogleBtn').addEventListener('click', syncToGoogle);
+            document.getElementById('loadGoogleBtn').addEventListener('click', loadFromGoogle);
+            document.getElementById('configGoogleBtn').addEventListener('click', () => {
+                document.getElementById('googleConfigModal').style.display = 'block';
+            });
             
+            // Google config modal
+            document.getElementById('saveConfigBtn').addEventListener('click', () => {
+                saveGoogleConfig();
+                document.getElementById('googleConfigModal').style.display = 'none';
+            });
+            
+            document.getElementById('cancelConfigBtn').addEventListener('click', () => {
+                document.getElementById('googleConfigModal').style.display = 'none';
+            });
+            
+            // Modal controls
             document.getElementById('closeModal').addEventListener('click', () => {
                 document.getElementById('taskModal').style.display = 'none';
             });
-                       
+            
             document.getElementById('addTaskBtn').addEventListener('click', addTask);
             
-            document.getElementById('fileInput').addEventListener('change', handleFileImport);
-            
+            // Close modal on outside click
             window.addEventListener('click', (e) => {
-                const taskModal = document.getElementById('taskModal');
-                if (e.target === taskModal) {
-                    taskModal.style.display = 'none';
+                const modal = document.getElementById('taskModal');
+                const googleModal = document.getElementById('googleConfigModal');
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+                if (e.target === googleModal) {
+                    googleModal.style.display = 'none';
                 }
             });
             
+            // Enter key for adding task
             document.getElementById('newTaskInput').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     addTask();
@@ -1259,6 +1600,7 @@
             });
         }
         
+        // Initialize on load
         document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
