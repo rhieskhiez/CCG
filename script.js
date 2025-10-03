@@ -42,76 +42,78 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // --- LOGIC PENJADWALAN (UPDATED) ---
+    // --- LOGIC PENJADWALAN (UPDATED FOR BENGKONG BARRIER) ---
     function getTasksForDate(day, dayOfWeek, weekOfMonth, isLastWeek) {
         let tasks = [];
         // dayOfWeek: 0=Minggu, 1=Senin, ..., 6=Sabtu
-        // weekOfMonth: 1, 2, 3, 4, 5
 
-        // TUGAS RUTIN MINGGUAN
+        // TUGAS RUTIN NON-SHOOTING MINGGUAN
         switch (dayOfWeek) {
             case 1: // Senin
                 tasks.push({ text: "Weekly 1on1 with SocMed Manager", type: "meeting" });
-                tasks.push({ text: "Cleanup Shooting Sesi #1", type: "shooting" });
                 break;
             case 2: // Selasa
-                tasks.push({ text: "Olah & sortir footage (Cleanup & MRF)", type: "postprod" });
-                tasks.push({ text: "Prepare Thematic Timelapse", type: "postprod" });
+                tasks.push({ text: "Olah & sortir footage", type: "postprod" });
                 break;
             case 3: // Rabu
-                tasks.push({ text: "Cleanup Shooting Sesi #2", type: "shooting" });
+                // Hari shooting, tugas spesifik diatur di bawah
                 break;
-            case 4: // Kamis (Tugas dari Jumat dipindah ke sini)
-                tasks.push({ text: "Cleanup Shooting Sesi #3 (Optional)", type: "shooting" });
-                tasks.push({ text: "Select 10 best raw photos/videos of the week", type: "postprod" });
+            case 4: // Kamis
+                tasks.push({ text: "Select 10 best raw photos/videos", type: "postprod" });
                 tasks.push({ text: "Provide landscape & portrait version", type: "postprod" });
                 break;
-            case 5: // Jumat (Sekarang menjadi Editing Day)
+            case 5: // Jumat
                 tasks.push({ text: "Editing Day", type: "editing" });
                 break;
         }
 
-        // TUGAS SPESIFIK MINGGUAN & BULANAN (Jadwal editing disesuaikan ke hari Jumat)
+        // TUGAS SPESIFIK MINGGUAN (SHOOTING & EDITING)
         switch (weekOfMonth) {
-            case 1: // MINGGU 1
-                if (dayOfWeek === 1 && day === 1) {
-                    tasks.push({ text: "Publish Video Summary Bulan Lalu", type: "special" });
-                }
-                if (dayOfWeek === 3) tasks.push({ text: "Shoot 'Before & After' #1", type: "shooting" });
-                if (dayOfWeek === 4) tasks.push({ text: "Shoot Interview Komunitas #1", type: "shooting" }); // Dipindah ke Kamis
-                if (dayOfWeek === 5) tasks.push({ text: "Edit 'Plastic Adventure of the Month' & 1 simple video", type: "editing" }); // Pindah ke Jumat
+            case 1: // MINGGU 1: FOKUS TIM LOKASI TETAP
+                if (dayOfWeek === 1) tasks.push({ text: "Plan & Prepare Weekly Shoot", type: "meeting" });
+                if (dayOfWeek === 2) tasks.push({ text: "SHOOT: Tim Lele (Bengkong) - Barrier Penuh", type: "shooting" }); // PINDAH KE SELASA
+                if (dayOfWeek === 3) tasks.push({ text: "SHOOT: Tim Walrus (Tanjung Uma)", type: "shooting" });
+                if (dayOfWeek === 4) tasks.push({ text: "SHOOT: Tim Oyster (Setokok)", type: "shooting" });
+                if (dayOfWeek === 5) tasks.push({ text: "Edit 'Plastic Adventure of the Month' & 1 video", type: "editing" });
                 break;
-            case 2: // MINGGU 2
-                if (dayOfWeek === 3) tasks.push({ text: "Shoot 'Before & After' #2", type: "shooting" });
-                if (dayOfWeek === 4) { // Dipindah ke Kamis
-                    tasks.push({ text: "Shoot Crew Profile/Interview", type: "special" });
-                    tasks.push({ text: "Shoot MRF Timelapse #1", type: "shooting" });
+                
+            case 2: // MINGGU 2: FOKUS TIM BERGERAK & PROGRES AWAL
+                if (dayOfWeek === 1) tasks.push({ text: "SHOOT: Tim Dugong (Moving)", type: "shooting" });
+                if (dayOfWeek === 3) tasks.push({ text: "SHOOT: Tim Jellyfish (Moving)", type: "shooting" });
+                if (dayOfWeek === 4) tasks.push({ text: "SHOOT: Tim Lele (Bengkong) - Barrier Penuh", type: "shooting" }); // TETAP DI KAMIS
+                if (dayOfWeek === 5) {
+                    tasks.push({ text: "Edit 2-3 requested simple videos", type: "editing" });
+                    tasks.push({ text: "Edit Crew Profile/Interview Video", type: "special" });
                 }
-                if (dayOfWeek === 5) tasks.push({ text: "Edit 2-3 requested simple videos", type: "editing" }); // Pindah ke Jumat
                 break;
-            case 3: // MINGGU 3
-                if (dayOfWeek === 3) tasks.push({ text: "Shoot 'Before & After' #3", type: "shooting" });
-                 if (dayOfWeek === 4) { // Dipindah ke Kamis
-                    tasks.push({ text: "Shoot 'A Day-in-the-Life' Video", type: "special" });
-                    tasks.push({ text: "Shoot Interview Komunitas #2", type: "shooting" });
+
+            case 3: // MINGGU 3: LIPUTAN PROGRES LANJUTAN
+                if (dayOfWeek === 1) tasks.push({ text: "SHOOT: Tim Walrus (Tanjung Uma) - Progres", type: "shooting" });
+                if (dayOfWeek === 3) tasks.push({ text: "SHOOT: Tim Oyster (Setokok) - Progres", type: "shooting" });
+                if (dayOfWeek === 4) tasks.push({ text: "SHOOT: Tim Dugong (Moving)", type: "shooting" });
+                 if (dayOfWeek === 5) {
+                    tasks.push({ text: "Edit 2-3 requested simple videos", type: "editing" });
+                    tasks.push({ text: "Edit 'Day-in-the-Life' Video", type: "special" });
                 }
-                if (dayOfWeek === 5) tasks.push({ text: "Edit 2-3 requested simple videos", type: "editing" }); // Pindah ke Jumat
                 break;
-            case 4: // MINGGU 4
-                if (dayOfWeek === 3) tasks.push({ text: "Shoot 'Before & After' #4", type: "shooting" });
-                if (dayOfWeek === 4) { // Dipindah ke Kamis
-                    tasks.push({ text: "Shoot MRF Timelapse #2", type: "shooting" });
-                }
-                if (dayOfWeek === 5) { // Pindah ke Jumat
+
+            case 4: // MINGGU 4: FINALISASI & KPI KHUSUS
+                if (dayOfWeek === 1) tasks.push({ text: "SHOOT: Tim Jellyfish (Moving)", type: "shooting" });
+                if (dayOfWeek === 3) tasks.push({ text: "SHOOT: Fokus MRF & Profil Kru", type: "special" });
+                if (dayOfWeek === 4) tasks.push({ text: "SHOOT: Fleksibel (Area Terpencil/Budaya)", type: "special" });
+                if (dayOfWeek === 5) {
                     tasks.push({ text: "Edit 2-3 requested simple videos", type: "editing" });
                     tasks.push({ text: "Mulai edit Video Summary Bulan Ini", type: "editing" });
                 }
                 break;
         }
 
-        // Finalisasi rekap di akhir bulan
+        // TUGAS AKHIR BULAN
         if (isLastWeek && dayOfWeek === 5) {
              tasks.push({ text: "Finalisasi Video Summary Bulan Ini", type: "special" });
+        }
+        if (day === 1 && dayOfWeek > 0 && dayOfWeek < 6) {
+            tasks.push({ text: "Publish Video Summary Bulan Lalu", type: "special" });
         }
 
         return tasks;
@@ -120,7 +122,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- FUNGSI GENERATE KALENDER (Tidak ada perubahan di sini) ---
     function generateCalendar(month, year, forYearlyView = false) {
-        const firstDay = new Date(year, month, 1);
+        const firstDay = new new Date(year, month, 1);
         const lastDay = new Date(year, month + 1, 0);
         const daysInMonth = lastDay.getDate();
         const startDayOfWeek = firstDay.getDay(); // 0 for Sunday
@@ -135,13 +137,12 @@ document.addEventListener('DOMContentLoaded', function() {
         monthHeader.style.margin = '15px 0';
         
         if (forYearlyView) {
-            calendarContainer.appendChild(monthHeader);
+            yearlyContainer.appendChild(monthHeader);
         } else {
              calendarContainer.innerHTML = ''; // Clear previous calendar
              calendarContainer.appendChild(monthHeader);
         }
        
-        // Add day headers
         const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
         dayNames.forEach(name => {
             const dayHeader = document.createElement('div');
@@ -150,12 +151,10 @@ document.addEventListener('DOMContentLoaded', function() {
             calendar.appendChild(dayHeader);
         });
 
-        // Add empty cells for days before the 1st
         for (let i = 0; i < startDayOfWeek; i++) {
             calendar.appendChild(document.createElement('div'));
         }
 
-        // Add day cells
         for (let i = 1; i <= daysInMonth; i++) {
             const dayCell = document.createElement('div');
             dayCell.className = 'day';
@@ -175,7 +174,7 @@ document.addEventListener('DOMContentLoaded', function() {
             tasksContainer.className = 'tasks';
             
             const weekOfMonth = Math.ceil((i + startDayOfWeek) / 7);
-            const isLastWeek = (i + 7 > daysInMonth);
+            const isLastWeek = (new Date(year, month, i + 7).getMonth() !== month);
 
             const tasks = getTasksForDate(i, dayOfWeek, weekOfMonth, isLastWeek);
             tasks.forEach(task => {
