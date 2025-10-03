@@ -108,6 +108,7 @@
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             padding: 10px;
+            padding-bottom: 100px; /* Space untuk floating nav */
         }
         
         /* Day Headers Container */
@@ -224,267 +225,96 @@
             margin-top: 2px;
         }
         
-/* Bottom Navigation - Floating Style */
-.bottom-nav {
-    position: fixed;
-    bottom: 15px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: white;
-    border-radius: 20px;
-    display: flex;
-    justify-content: space-around;
-    padding: 8px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05);
-    z-index: 100;
-    width: calc(100% - 30px);
-    max-width: 400px;
-    backdrop-filter: blur(10px);
-    background: rgba(255, 255, 255, 0.95);
-}
-
-.nav-item {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 10px 5px;
-    cursor: pointer;
-    transition: all 0.3s;
-    border: none;
-    background: none;
-    color: #718096;
-    border-radius: 12px;
-    position: relative;
-}
-
-.nav-item:active {
-    transform: scale(0.95);
-}
-
-.nav-item.active {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-}
-
-.nav-item.active .nav-icon {
-    transform: translateY(-2px);
-}
-
-.nav-icon {
-    font-size: 22px;
-    margin-bottom: 4px;
-    transition: all 0.3s;
-}
-
-.nav-label {
-    font-size: 10px;
-    font-weight: 600;
-    transition: all 0.3s;
-}
-
-/* Floating indicator dot */
-.nav-item.active::before {
-    content: '';
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    width: 6px;
-    height: 6px;
-    background: #48bb78;
-    border-radius: 50%;
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0% {
-        transform: scale(1);
-        opacity: 1;
-    }
-    50% {
-        transform: scale(1.2);
-        opacity: 0.7;
-    }
-    100% {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-
-/* Adjust calendar container untuk floating nav */
-.calendar-container {
-    flex: 1;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    padding: 10px;
-    padding-bottom: 90px; /* Space untuk floating nav */
-}
-
-/* Toast position adjustment */
-.toast {
-    position: fixed;
-    bottom: 100px; /* Dinaikkan karena floating nav */
-    left: 50%;
-    transform: translateX(-50%) translateY(100px);
-    background: #2d3748;
-    color: white;
-    padding: 12px 20px;
-    border-radius: 8px;
-    font-size: 14px;
-    opacity: 0;
-    transition: all 0.3s;
-    z-index: 3000;
-    max-width: 90%;
-    text-align: center;
-}
-
-/* Mobile menu adjustment */
-.mobile-menu {
-    position: fixed;
-    bottom: -100%;
-    left: 0;
-    right: 0;
-    background: white;
-    border-radius: 20px 20px 0 0;
-    box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
-    transition: bottom 0.3s ease;
-    z-index: 1000;
-    max-height: calc(100vh - 120px); /* Kurangi space untuk floating nav */
-    overflow-y: auto;
-}
-
-/* Landscape Mode Adjustments */
-@media screen and (orientation: landscape) and (max-height: 600px) {
-    .bottom-nav {
-        bottom: 10px;
-        padding: 5px;
-        width: calc(100% - 20px);
-    }
-    
-    .nav-item {
-        padding: 8px 5px;
-    }
-    
-    .nav-icon {
-        font-size: 20px;
-    }
-    
-    .nav-label {
-        font-size: 9px;
-    }
-    
-    .calendar-container {
-        padding-bottom: 70px;
-    }
-    
-    .toast {
-        bottom: 80px;
-    }
-}
-
-/* Tablet Support */
-@media screen and (min-width: 768px) {
-    .bottom-nav {
-        max-width: 500px;
-        padding: 10px;
-        bottom: 20px;
-    }
-    
-    .nav-item {
-        padding: 12px 8px;
-    }
-    
-    .nav-icon {
-        font-size: 24px;
-    }
-    
-    .nav-label {
-        font-size: 11px;
-    }
-    
-    .calendar-container {
-        padding-bottom: 100px;
-    }
-}
-
-/* Extra visual enhancement untuk floating effect */
-.bottom-nav::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: 20px;
-    padding: 1px;
-    background: linear-gradient(135deg, #667eea20, #764ba220);
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
-}
-
-/* Hover effect untuk desktop/tablet */
-@media (hover: hover) {
-    .nav-item:hover {
-        background: rgba(102, 126, 234, 0.1);
-        transform: translateY(-2px);
-    }
-    
-    .nav-item.active:hover {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        transform: translateY(-2px);
-    }
-}
-
-/* Safe area untuk iPhone dengan notch */
-@supports (padding-bottom: env(safe-area-inset-bottom)) {
-    .bottom-nav {
-        bottom: calc(15px + env(safe-area-inset-bottom));
-        padding-bottom: calc(8px + env(safe-area-inset-bottom));
-    }
-    
-    .calendar-container {
-        padding-bottom: calc(90px + env(safe-area-inset-bottom));
-    }
-}        
-		
-		/* Animation saat load */
-.bottom-nav {
-    animation: slideUp 0.5s ease-out;
-}
-
-@keyframes slideUp {
-    from {
-        transform: translateX(-50%) translateY(100px);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(-50%) translateY(0);
-        opacity: 1;
-    }
-}
-
-/* Stagger animation untuk nav items */
-.nav-item {
-    animation: fadeInScale 0.3s ease-out backwards;
-}
-
-.nav-item:nth-child(1) { animation-delay: 0.1s; }
-.nav-item:nth-child(2) { animation-delay: 0.15s; }
-.nav-item:nth-child(3) { animation-delay: 0.2s; }
-.nav-item:nth-child(4) { animation-delay: 0.25s; }
-.nav-item:nth-child(5) { animation-delay: 0.3s; }
-
-@keyframes fadeInScale {
-    from {
-        transform: scale(0.8);
-        opacity: 0;
-    }
-    to {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-		
+        /* Bottom Navigation - Floating Style */
+        .bottom-nav {
+            position: fixed;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border-radius: 20px;
+            display: flex;
+            justify-content: space-around;
+            padding: 8px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05);
+            z-index: 100;
+            width: calc(100% - 30px);
+            max-width: 400px;
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+            animation: slideUp 0.5s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from {
+                transform: translateX(-50%) translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            background: none;
+            color: #718096;
+            border-radius: 12px;
+            position: relative;
+            animation: fadeInScale 0.3s ease-out backwards;
+        }
+        
+        .nav-item:nth-child(1) { animation-delay: 0.1s; }
+        .nav-item:nth-child(2) { animation-delay: 0.15s; }
+        .nav-item:nth-child(3) { animation-delay: 0.2s; }
+        .nav-item:nth-child(4) { animation-delay: 0.25s; }
+        .nav-item:nth-child(5) { animation-delay: 0.3s; }
+        
+        @keyframes fadeInScale {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .nav-item:active {
+            transform: scale(0.95);
+        }
+        
+        .nav-item.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .nav-item.active .nav-icon {
+            transform: translateY(-2px);
+        }
+        
+        .nav-icon {
+            font-size: 22px;
+            margin-bottom: 4px;
+            transition: all 0.3s;
+        }
+        
+        .nav-label {
+            font-size: 10px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
         /* Mobile Menu Overlay */
         .mobile-menu {
             position: fixed;
@@ -496,12 +326,23 @@
             box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
             transition: bottom 0.3s ease;
             z-index: 1000;
-            max-height: 70vh;
+            max-height: calc(100vh - 120px);
             overflow-y: auto;
         }
         
         .mobile-menu.active {
             bottom: 0;
+        }
+        
+        /* Menu Header dengan Close Button */
+        .menu-header {
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 10;
+            border-bottom: 1px solid #e9ecef;
+            padding-bottom: 15px;
+            border-radius: 20px 20px 0 0;
         }
         
         .menu-handle {
@@ -510,18 +351,69 @@
             background: #cbd5e0;
             border-radius: 2px;
             margin: 10px auto;
+            cursor: grab;
+        }
+        
+        .menu-handle:active {
+            cursor: grabbing;
+        }
+        
+        .menu-title-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
         }
         
         .menu-title {
             font-size: 18px;
             font-weight: bold;
-            padding: 0 20px 15px;
             color: #2d3748;
-            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .menu-close-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: #f8f9fa;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 20px;
+            color: #718096;
+        }
+        
+        .menu-close-btn:hover {
+            background: #e9ecef;
+            color: #2d3748;
+            transform: rotate(90deg);
+        }
+        
+        .menu-close-btn:active {
+            transform: scale(0.95) rotate(90deg);
+        }
+        
+        .mobile-menu.active .menu-close-btn {
+            animation: rotateIn 0.5s ease-out;
+        }
+        
+        @keyframes rotateIn {
+            from {
+                transform: rotate(-90deg);
+                opacity: 0;
+            }
+            to {
+                transform: rotate(0deg);
+                opacity: 1;
+            }
         }
         
         .menu-content {
             padding: 15px;
+            padding-top: 0;
         }
         
         .menu-section {
@@ -813,7 +705,7 @@
         
         .toast {
             position: fixed;
-            bottom: 80px;
+            bottom: 100px;
             left: 50%;
             transform: translateX(-50%) translateY(100px);
             background: #2d3748;
@@ -930,6 +822,7 @@
             
             .calendar-container {
                 padding: 5px;
+                padding-bottom: 80px;
             }
             
             .day-cell-mobile {
@@ -941,23 +834,43 @@
             }
             
             .bottom-nav {
-                padding: 3px 0;
+                bottom: 10px;
+                padding: 5px;
+                width: calc(100% - 20px);
             }
             
             .nav-item {
-                padding: 5px;
+                padding: 8px 5px;
             }
             
             .nav-icon {
-                font-size: 18px;
+                font-size: 20px;
             }
             
             .nav-label {
                 font-size: 9px;
             }
             
+            .toast {
+                bottom: 80px;
+            }
+            
             .mobile-menu {
-                max-height: 90vh;
+                max-height: calc(100vh - 90px);
+            }
+            
+            .menu-header {
+                padding-bottom: 10px;
+            }
+            
+            .menu-close-btn {
+                width: 32px;
+                height: 32px;
+                font-size: 18px;
+            }
+            
+            .menu-title {
+                font-size: 16px;
             }
         }
         
@@ -979,6 +892,7 @@
             
             .calendar-container {
                 padding: 15px;
+                padding-bottom: 110px;
             }
             
             .day-headers-container {
@@ -1007,8 +921,39 @@
                 height: 6px;
             }
             
+            .bottom-nav {
+                max-width: 500px;
+                padding: 10px;
+                bottom: 20px;
+            }
+            
+            .nav-item {
+                padding: 12px 8px;
+            }
+            
+            .nav-icon {
+                font-size: 24px;
+            }
+            
+            .nav-label {
+                font-size: 11px;
+            }
+            
             .stats-container-mobile {
                 grid-template-columns: repeat(4, 1fr);
+            }
+            
+            .menu-close-btn {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .menu-title {
+                font-size: 20px;
+            }
+            
+            .menu-title-wrapper {
+                padding: 0 30px;
             }
         }
         
@@ -1020,6 +965,7 @@
             
             .calendar-container {
                 padding: 20px;
+                padding-bottom: 120px;
             }
             
             .day-cell-mobile {
@@ -1083,6 +1029,31 @@
             font-size: 14px;
         }
         
+        /* Hover effect untuk desktop/tablet */
+        @media (hover: hover) {
+            .nav-item:hover {
+                background: rgba(102, 126, 234, 0.1);
+                transform: translateY(-2px);
+            }
+            
+            .nav-item.active:hover {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                transform: translateY(-2px);
+            }
+        }
+        
+        /* Safe area untuk iPhone dengan notch */
+        @supports (padding-bottom: env(safe-area-inset-bottom)) {
+            .bottom-nav {
+                bottom: calc(15px + env(safe-area-inset-bottom));
+                padding-bottom: calc(8px + env(safe-area-inset-bottom));
+            }
+            
+            .calendar-container {
+                padding-bottom: calc(100px + env(safe-area-inset-bottom));
+            }
+        }
+        
         /* Hide scrollbar but keep functionality */
         .calendar-container::-webkit-scrollbar,
         .mobile-menu::-webkit-scrollbar {
@@ -1098,224 +1069,6 @@
             -ms-user-select: none;
             user-select: none;
         }
-		
-		/* Menu Header dengan Close Button */
-.menu-header {
-    position: sticky;
-    top: 0;
-    background: white;
-    z-index: 10;
-    border-bottom: 1px solid #e9ecef;
-    padding-bottom: 15px;
-}
-
-.menu-handle {
-    width: 40px;
-    height: 4px;
-    background: #cbd5e0;
-    border-radius: 2px;
-    margin: 10px auto;
-    cursor: grab;
-}
-
-.menu-handle:active {
-    cursor: grabbing;
-}
-
-.menu-title-wrapper {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 20px;
-}
-
-.menu-title {
-    font-size: 18px;
-    font-weight: bold;
-    color: #2d3748;
-}
-
-.menu-close-btn {
-    width: 36px;
-    height: 36px;
-    border: none;
-    background: #f8f9fa;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s;
-    font-size: 20px;
-    color: #718096;
-}
-
-.menu-close-btn:hover {
-    background: #e9ecef;
-    color: #2d3748;
-    transform: rotate(90deg);
-}
-
-.menu-close-btn:active {
-    transform: scale(0.95) rotate(90deg);
-}
-
-/* Floating close button alternative (optional) */
-.menu-close-floating {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    width: 40px;
-    height: 40px;
-    border: none;
-    background: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    transition: all 0.3s;
-    z-index: 11;
-    font-size: 24px;
-    color: #718096;
-}
-
-.menu-close-floating:hover {
-    background: #667eea;
-    color: white;
-    transform: rotate(90deg);
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-}
-
-/* Update menu content padding */
-.menu-content {
-    padding: 15px;
-    padding-top: 0;
-}
-
-/* Animasi close button saat menu dibuka */
-.mobile-menu.active .menu-close-btn {
-    animation: rotateIn 0.5s ease-out;
-}
-
-@keyframes rotateIn {
-    from {
-        transform: rotate(-90deg);
-        opacity: 0;
-    }
-    to {
-        transform: rotate(0deg);
-        opacity: 1;
-    }
-}
-
-/* Optional: Close button dengan icon yang lebih stylish */
-.menu-close-modern {
-    position: relative;
-    width: 40px;
-    height: 40px;
-    border: 2px solid #e9ecef;
-    background: white;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: all 0.3s;
-    overflow: hidden;
-}
-
-.menu-close-modern::before,
-.menu-close-modern::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 20px;
-    height: 2px;
-    background: #718096;
-    transition: all 0.3s;
-}
-
-.menu-close-modern::before {
-    transform: translate(-50%, -50%) rotate(45deg);
-}
-
-.menu-close-modern::after {
-    transform: translate(-50%, -50%) rotate(-45deg);
-}
-
-.menu-close-modern:hover {
-    background: #667eea;
-    border-color: #667eea;
-    transform: scale(1.1);
-}
-
-.menu-close-modern:hover::before,
-.menu-close-modern:hover::after {
-    background: white;
-}
-
-/* Responsive adjustments */
-@media screen and (orientation: landscape) and (max-height: 600px) {
-    .menu-header {
-        padding-bottom: 10px;
-    }
-    
-    .menu-close-btn {
-        width: 32px;
-        height: 32px;
-        font-size: 18px;
-    }
-    
-    .menu-title {
-        font-size: 16px;
-    }
-}
-
-/* Tablet adjustments */
-@media screen and (min-width: 768px) {
-    .menu-close-btn {
-        width: 40px;
-        height: 40px;
-    }
-    
-    .menu-title {
-        font-size: 20px;
-    }
-    
-    .menu-title-wrapper {
-        padding: 0 30px;
-    }
-}
-
-/* Alternative: Swipe down indicator dengan close */
-.menu-swipe-close {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 10px;
-    cursor: pointer;
-}
-
-.menu-swipe-close .swipe-line {
-    width: 40px;
-    height: 4px;
-    background: #cbd5e0;
-    border-radius: 2px;
-    margin-bottom: 4px;
-    transition: all 0.3s;
-}
-
-.menu-swipe-close:hover .swipe-line {
-    background: #667eea;
-}
-
-.menu-swipe-close .close-text {
-    font-size: 11px;
-    color: #718096;
-    margin-top: 2px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
     </style>
 </head>
 <body>
@@ -1356,7 +1109,7 @@
             <div class="swipe-hint right" id="swipeRight">▶</div>
         </div>
         
-        <!-- Bottom Navigation -->
+        <!-- Bottom Navigation - Floating -->
         <nav class="bottom-nav">
             <button class="nav-item active" id="navCalendar">
                 <span class="nav-icon">📅</span>
@@ -1381,21 +1134,22 @@
         </nav>
     </div>
     
-<!-- Mobile Menu -->
-<div class="mobile-menu" id="mobileMenu">
-    <div class="menu-header">
-        <div class="menu-handle"></div>
-        <div class="menu-title-wrapper">
-            <div class="menu-title" id="menuTitle">Menu</div>
-            <button class="menu-close-btn" id="menuCloseBtn">
-                <span>✕</span>
-            </button>
+    <!-- Mobile Menu with Close Button -->
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="menu-header">
+            <div class="menu-handle"></div>
+            <div class="menu-title-wrapper">
+                <div class="menu-title" id="menuTitle">Menu</div>
+                <button class="menu-close-btn" id="menuCloseBtn">
+                    <span>✕</span>
+                </button>
+            </div>
+        </div>
+        <div class="menu-content" id="menuContent">
+            <!-- Dynamic content will be inserted here -->
         </div>
     </div>
-    <div class="menu-content" id="menuContent">
-        <!-- Dynamic content will be inserted here -->
-    </div>
-</div>    
+    
     <!-- Task Modal -->
     <div class="modal-mobile" id="taskModal">
         <div class="modal-header-mobile">
@@ -1472,9 +1226,10 @@
         let currentMonth = new Date().getMonth();
         let currentYear = new Date().getFullYear();
         let selectedDate = null;
-        let googleWebAppUrl = 'https://script.google.com/macros/s/AKfycbyShSkVm3S9PjF0D8dM63wNPNqWO58-4qroYerAlARZTIQ69pAe1gDykb4EZ3LbSzVsWQ/exec';
+        let googleWebAppUrl = '';
         let touchStartX = 0;
         let touchEndX = 0;
+        let menuTouchStartY = 0;
         
         // Teams Configuration
         const teams = {
@@ -2288,7 +2043,19 @@
         }
         
         function closeMenu() {
-            document.getElementById('mobileMenu').classList.remove('active');
+            const menu = document.getElementById('mobileMenu');
+            menu.style.transition = 'bottom 0.3s ease-out';
+            menu.classList.remove('active');
+            
+            // Reset nav items
+            setTimeout(() => {
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    if (item.id !== 'navCalendar') {
+                        item.classList.remove('active');
+                    }
+                });
+                document.getElementById('navCalendar').classList.add('active');
+            }, 300);
         }
         
         function showConfigModal() {
@@ -2364,6 +2131,35 @@
                     }
                 }
             }, { passive: true });
+            
+            // Menu swipe to close
+            const menuHandle = document.querySelector('.menu-handle');
+            
+            menuHandle.addEventListener('touchstart', (e) => {
+                menuTouchStartY = e.touches[0].clientY;
+            }, { passive: true });
+            
+            menuHandle.addEventListener('touchmove', (e) => {
+                const touchY = e.touches[0].clientY;
+                const diff = touchY - menuTouchStartY;
+                
+                if (diff > 0) {
+                    const menu = document.getElementById('mobileMenu');
+                    menu.style.transform = `translateY(${diff}px)`;
+                }
+            }, { passive: true });
+            
+            menuHandle.addEventListener('touchend', (e) => {
+                const touchY = e.changedTouches[0].clientY;
+                const diff = touchY - menuTouchStartY;
+                const menu = document.getElementById('mobileMenu');
+                
+                if (diff > 100) {
+                    closeMenu();
+                } else {
+                    menu.style.transform = 'translateY(0)';
+                }
+            }, { passive: true });
         }
         
         // Setup event listeners
@@ -2403,6 +2199,18 @@
                 navigateToToday();
             });
             
+            // Menu close button
+            document.getElementById('menuCloseBtn').addEventListener('click', () => {
+                closeMenu();
+            });
+            
+            // Click outside menu to close
+            document.getElementById('mobileMenu').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('mobileMenu')) {
+                    closeMenu();
+                }
+            });
+            
             // Task modal
             document.getElementById('modalBack').addEventListener('click', () => {
                 document.getElementById('taskModal').classList.remove('active');
@@ -2416,21 +2224,6 @@
                 }
             });
             
-            // Menu handle swipe to close
-            const menuHandle = document.querySelector('.menu-handle');
-            let menuTouchStart = 0;
-            
-            menuHandle.addEventListener('touchstart', (e) => {
-                menuTouchStart = e.touches[0].clientY;
-            });
-            
-            menuHandle.addEventListener('touchmove', (e) => {
-                const touchY = e.touches[0].clientY;
-                if (touchY - menuTouchStart > 50) {
-                    closeMenu();
-                }
-            });
-            
             // Config modal
             document.getElementById('saveConfigBtn').addEventListener('click', () => {
                 saveGoogleConfig();
@@ -2438,6 +2231,25 @@
             });
             
             document.getElementById('cancelConfigBtn').addEventListener('click', closeConfigModal);
+            
+            // ESC key to close modals/menus
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    const menu = document.getElementById('mobileMenu');
+                    const taskModal = document.getElementById('taskModal');
+                    const configModal = document.getElementById('configModal');
+                    
+                    if (menu.classList.contains('active')) {
+                        closeMenu();
+                    }
+                    if (taskModal.classList.contains('active')) {
+                        taskModal.classList.remove('active');
+                    }
+                    if (configModal.classList.contains('active')) {
+                        closeConfigModal();
+                    }
+                }
+            });
         }
         
         // Initialize on load
@@ -2450,104 +2262,8 @@
         window.exportImage = exportImage;
         window.syncToGoogle = syncToGoogle;
         window.loadFromGoogle = loadFromGoogle;
-
         window.saveDataLocal = saveDataLocal;
         window.showConfigModal = showConfigModal;
-		
-		// Tambahkan event listener untuk close button
-function setupEventListeners() {
-    // ... kode existing ...
-    
-    // Menu close button
-    document.getElementById('menuCloseBtn').addEventListener('click', () => {
-        closeMenu();
-        // Reset active state ke calendar
-        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-        document.getElementById('navCalendar').classList.add('active');
-    });
-    
-    // Alternative: Close dengan swipe atau click di backdrop
-    document.getElementById('mobileMenu').addEventListener('click', (e) => {
-        // Close jika click di luar menu content
-        if (e.target === document.getElementById('mobileMenu')) {
-            closeMenu();
-        }
-    });
-    
-    // ... rest of existing code ...
-}
-
-// Update closeMenu function dengan animasi
-function closeMenu() {
-    const menu = document.getElementById('mobileMenu');
-    menu.style.transition = 'bottom 0.3s ease-out';
-    menu.classList.remove('active');
-    
-    // Optional: Hapus active state dari nav items
-    setTimeout(() => {
-        document.querySelectorAll('.nav-item').forEach(item => {
-            if (item.id !== 'navCalendar') {
-                item.classList.remove('active');
-            }
-        });
-    }, 300);
-}
-		
-		// Enhanced close functionality dengan gesture
-function enhancedMenuClose() {
-    const menu = document.getElementById('mobileMenu');
-    const menuHeader = document.querySelector('.menu-header');
-    const closeBtn = document.getElementById('menuCloseBtn');
-    
-    // Rotate close button on hover
-    closeBtn.addEventListener('mouseenter', () => {
-        closeBtn.style.transform = 'rotate(90deg)';
-    });
-    
-    closeBtn.addEventListener('mouseleave', () => {
-        closeBtn.style.transform = 'rotate(0deg)';
-    });
-    
-    // ESC key to close
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && menu.classList.contains('active')) {
-            closeMenu();
-        }
-    });
-    
-    // Swipe down to close
-    let startY = 0;
-    let currentY = 0;
-    
-    menuHeader.addEventListener('touchstart', (e) => {
-        startY = e.touches[0].clientY;
-    });
-    
-    menuHeader.addEventListener('touchmove', (e) => {
-        currentY = e.touches[0].clientY;
-        const diff = currentY - startY;
-        
-        if (diff > 0) {
-            menu.style.transform = `translateY(${diff}px)`;
-        }
-    });
-    
-    menuHeader.addEventListener('touchend', () => {
-        const diff = currentY - startY;
-        
-        if (diff > 100) {
-            closeMenu();
-        } else {
-            menu.style.transform = 'translateY(0)';
-        }
-        
-        startY = 0;
-        currentY = 0;
-    });
-}
-
-// Call this in init()
-enhancedMenuClose();
     </script>
 </body>
 </html>
