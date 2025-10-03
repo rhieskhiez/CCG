@@ -4,413 +4,441 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cleanup Content Calendar</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
     <style>
+        /* [... CSS Anda yang sudah ada tetap sama, tidak perlu diubah ...] */
         /* Reset dan Base Styles */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+        
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        /* Controls */
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+        }
         
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 10px;
-        }
-        
-        /* Container */
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
-        
-        /* Header */
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-        
-        .header h1 {
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
-        
-        /* Controls */
-        .controls {
+        /* BARU: Styling untuk grup tombol baru */
+        .controls .button-group {
             display: flex;
-            flex-wrap: wrap;
+            gap: 10px;
+            width: 100%;
             justify-content: center;
-            gap: 10px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-bottom: 2px solid #e9ecef;
-        }
-        
-        .controls button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            background: #667eea;
-            color: white;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-        
-        .controls button:hover {
-            background: #5a67d8;
-            transform: translateY(-2px);
-        }
-        
-        .controls select {
-            padding: 10px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            font-size: 14px;
-            background: white;
-        }
-        
-        /* Calendar Grid */
-        .calendar-container {
-            padding: 20px;
-        }
-        
-        .month-header {
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 20px;
-            font-weight: bold;
-            color: #2d3748;
-        }
-        
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 5px;
-            margin-bottom: 20px;
-        }
-        
-        .day-header {
-            background: #667eea;
-            color: white;
-            padding: 10px;
-            text-align: center;
-            font-weight: bold;
-            font-size: 12px;
-        }
-        
-        .day-cell {
-            min-height: 120px;
-            background: white;
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
-            padding: 8px;
-            position: relative;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .day-cell:hover {
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
-            transform: translateY(-2px);
-        }
-        
-        .day-cell.other-month {
-            background: #f8f9fa;
-            opacity: 0.5;
-        }
-        
-        .day-cell.weekend {
-            background: #fff5f5;
-        }
-        
-        .day-cell.today {
-            border: 2px solid #667eea;
-            background: #f0f4ff;
-        }
-        
-        .day-number {
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: #2d3748;
-        }
-        
-        .day-tasks {
-            font-size: 10px;
-            color: #4a5568;
-            max-height: 80px;
-            overflow-y: auto;
-        }
-        
-        .task-item {
-            background: #e6f3ff;
-            padding: 2px 4px;
-            margin: 2px 0;
-            border-radius: 3px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .task-item.editing {
-            background: #fff3cd;
-        }
-        
-        .task-item.cleanup {
-            background: #d4edda;
-        }
-        
-        .task-item.mrf {
-            background: #e7e3ff;
-        }
-        
-        /* Task Detail Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            animation: fadeIn 0.3s;
-        }
-        
-        .modal-content {
-            position: relative;
-            background: white;
-            margin: 5% auto;
-            padding: 20px;
-            width: 90%;
-            max-width: 600px;
-            border-radius: 15px;
-            max-height: 80vh;
-            overflow-y: auto;
-            animation: slideIn 0.3s;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        @keyframes slideIn {
-            from { transform: translateY(-50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        
-        .modal-header h2 {
-            color: #2d3748;
-        }
-        
-        .close-btn {
-            font-size: 30px;
-            cursor: pointer;
-            color: #718096;
-            transition: color 0.3s;
-        }
-        
-        .close-btn:hover {
-            color: #2d3748;
-        }
-        
-        .task-list {
-            margin: 10px 0;
-        }
-        
-        .task-list-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            margin: 5px 0;
-            background: #f8f9fa;
-            border-radius: 8px;
-            transition: background 0.3s;
-        }
-        
-        .task-list-item:hover {
-            background: #e9ecef;
-        }
-        
-        .task-actions {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .btn-edit, .btn-delete {
-            padding: 5px 10px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 12px;
-            transition: all 0.3s;
-        }
-        
-        .btn-edit {
-            background: #4299e1;
-            color: white;
-        }
-        
-        .btn-edit:hover {
-            background: #3182ce;
-        }
-        
-        .btn-delete {
-            background: #f56565;
-            color: white;
-        }
-        
-        .btn-delete:hover {
-            background: #e53e3e;
-        }
-        
-        .add-task-form {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f0f4ff;
-            border-radius: 10px;
-        }
-        
-        .add-task-form input, .add-task-form select {
-            width: 100%;
-            padding: 10px;
-            margin: 5px 0;
-            border: 1px solid #cbd5e0;
-            border-radius: 5px;
-        }
-        
-        .add-task-form button {
-            width: 100%;
-            padding: 10px;
-            background: #48bb78;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
             margin-top: 10px;
-            transition: background 0.3s;
+            padding-top: 10px;
+            border-top: 1px solid #e9ecef;
         }
-        
-        .add-task-form button:hover {
-            background: #38a169;
+
+        .controls .button-group button {
+            background: #4a5568;
         }
-        
-        /* Stats Panel */
-        .stats-panel {
-            padding: 20px;
-            background: #f8f9fa;
-            border-top: 2px solid #e9ecef;
+        .controls .button-group button:hover {
+            background: #2d3748;
         }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-        }
-        
-        .stat-card {
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            transition: transform 0.3s;
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .stat-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #667eea;
-        }
-        
-        .stat-label {
-            color: #718096;
-            font-size: 12px;
-            margin-top: 5px;
-        }
-        
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .calendar-grid {
-                gap: 2px;
-            }
-            
-            .day-cell {
-                min-height: 80px;
-                padding: 5px;
-            }
-            
-            .day-header {
-                font-size: 10px;
-                padding: 5px;
-            }
-            
-            .day-number {
-                font-size: 12px;
-            }
-            
-            .day-tasks {
-                font-size: 8px;
-            }
-            
+        
+        .controls button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: #667eea;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .controls button:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+        }
+        
+        .controls select {
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+        }
+        
+        /* Calendar Grid */
+        .calendar-container {
+            padding: 20px;
+        }
+        
+        .month-header {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #2d3748;
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .day-header {
+            background: #667eea;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        .day-cell {
+            min-height: 120px;
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 8px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .day-cell:hover {
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .day-cell.other-month {
+            background: #f8f9fa;
+            opacity: 0.5;
+        }
+        
+        .day-cell.weekend {
+            background: #fff5f5;
+        }
+        
+        .day-cell.today {
+            border: 2px solid #667eea;
+            background: #f0f4ff;
+        }
+        
+        .day-number {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #2d3748;
+        }
+        
+        .day-tasks {
+            font-size: 10px;
+            color: #4a5568;
+            max-height: 80px;
+            overflow-y: auto;
+        }
+        
+        .task-item {
+            background: #e6f3ff;
+            padding: 2px 4px;
+            margin: 2px 0;
+            border-radius: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .task-item.editing {
+            background: #fff3cd;
+        }
+        
+        .task-item.cleanup {
+            background: #d4edda;
+        }
+        
+        .task-item.mrf {
+            background: #e7e3ff;
+        }
+        
+        /* Task Detail Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            animation: fadeIn 0.3s;
+        }
+        
+        .modal-content {
+            position: relative;
+            background: white;
+            margin: 5% auto;
+            padding: 20px;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 15px;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-header h2 {
+            color: #2d3748;
+        }
+        
+        .close-btn {
+            font-size: 30px;
+            cursor: pointer;
+            color: #718096;
+            transition: color 0.3s;
+        }
+        
+        .close-btn:hover {
+            color: #2d3748;
+        }
+        
+        .task-list {
+            margin: 10px 0;
+        }
+        
+        .task-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+        
+        .task-list-item:hover {
+            background: #e9ecef;
+        }
+        
+        .task-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-edit, .btn-delete {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+        
+        .btn-edit {
+            background: #4299e1;
+            color: white;
+        }
+        
+        .btn-edit:hover {
+            background: #3182ce;
+        }
+        
+        .btn-delete {
+            background: #f56565;
+            color: white;
+        }
+        
+        .btn-delete:hover {
+            background: #e53e3e;
+        }
+        
+        .add-task-form {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f4ff;
+            border-radius: 10px;
+        }
+        
+        .add-task-form input, .add-task-form select {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #cbd5e0;
+            border-radius: 5px;
+        }
+        
+        .add-task-form button {
+            width: 100%;
+            padding: 10px;
+            background: #48bb78;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+        
+        .add-task-form button:hover {
+            background: #38a169;
+        }
+        
+        /* Stats Panel */
+        .stats-panel {
+            padding: 20px;
+            background: #f8f9fa;
+            border-top: 2px solid #e9ecef;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #718096;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
             .controls {
+                flex-direction: column;
+            }
+            
+            .controls button, .controls select {
+                width: 100%;
+            }
+            /* BARU: Responsive untuk grup tombol */
+            .controls .button-group {
                 flex-direction: column;
             }
-            
-            .controls button, .controls select {
-                width: 100%;
-            }
-            
-            .modal-content {
-                width: 95%;
-                margin: 10% auto;
-            }
-        }
-        
-        /* Loading Spinner */
-        .loading {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 20px;
-            color: #667eea;
-            display: none;
-        }
-        
-        .loading.show {
-            display: block;
-        }
+
+            .calendar-grid {
+                gap: 2px;
+            }
+            
+            .day-cell {
+                min-height: 80px;
+                padding: 5px;
+            }
+            
+            .day-header {
+                font-size: 10px;
+                padding: 5px;
+            }
+            
+            .day-number {
+                font-size: 12px;
+            }
+            
+            .day-tasks {
+                font-size: 8px;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+            }
+        }
+        
+        /* Loading Spinner */
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 20px;
+            color: #667eea;
+            display: none;
+            z-index: 2000; /* BARU: pastikan di atas modal */
+            background: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .loading.show {
+            display: block;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
+    <div class="container" id="captureArea"> <div class="header">
             <h1>📸 Cleanup Content Calendar</h1>
             <p>Sistem Penjadwalan Konten untuk Tim Cleanup</p>
         </div>
         
-        <!-- Controls -->
         <div class="controls">
             <button id="prevMonth">◀ Bulan Sebelumnya</button>
             <select id="monthSelect"></select>
@@ -419,169 +447,187 @@
             <button id="generateMonth">Generate Jadwal Bulanan</button>
             <button id="generateYear">Generate Jadwal Tahunan</button>
             <button id="todayBtn">Hari Ini</button>
+
+            <div class="button-group">
+                <button id="saveToSheetsBtn">💾 Simpan ke Google Sheets</button>
+                <button id="loadFromSheetsBtn">🔄 Muat dari Google Sheets</button>
+                <button id="exportPdfBtn">📄 Export PDF</button>
+                <button id="exportImgBtn">🖼️ Export Gambar</button>
+            </div>
         </div>
         
-        <!-- Calendar Container -->
         <div class="calendar-container">
             <div class="month-header" id="monthHeader"></div>
             <div class="calendar-grid" id="calendar"></div>
         </div>
         
-        <!-- Statistics Panel -->
         <div class="stats-panel">
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-value" id="totalTasks">0</div>
-                    <div class="stat-label">Total Tugas Bulan Ini</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="cleanupCount">0</div>
-                    <div class="stat-label">Cleanup Sessions</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="editingCount">0</div>
-                    <div class="stat-label">Editing Sessions</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="weekProgress">0/4</div>
-                    <div class="stat-label">Progress Minggu</div>
-                </div>
-            </div>
+             <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalTasks">0</div>
+                    <div class="stat-label">Total Tugas Bulan Ini</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="cleanupCount">0</div>
+                    <div class="stat-label">Cleanup Sessions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="editingCount">0</div>
+                    <div class="stat-label">Editing Sessions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="weekProgress">0/4</div>
+                    <div class="stat-label">Progress Minggu</div>
+                </div>
+            </div>
         </div>
     </div>
     
-    <!-- Task Detail Modal -->
     <div class="modal" id="taskModal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modalTitle">Detail Tugas</h2>
-                <span class="close-btn" id="closeModal">&times;</span>
-            </div>
-            <div class="task-list" id="taskList"></div>
-            <div class="add-task-form">
-                <h3>Tambah Tugas Baru</h3>
-                <input type="text" id="newTaskInput" placeholder="Masukkan tugas baru...">
-                <select id="taskCategory">
-                    <option value="cleanup">Cleanup</option>
-                    <option value="editing">Editing</option>
-                    <option value="mrf">MRF</option>
-                    <option value="other">Lainnya</option>
-                </select>
-                <select id="teamSelect">
-                    <option value="">Pilih Tim (opsional)</option>
-                    <option value="lele">Tim Lele - Bengkong</option>
-                    <option value="walrus">Tim Walrus - Tanjung Uma</option>
-                    <option value="oyster">Tim Oyster - Setokok</option>
-                    <option value="dugong">Tim Dugong - Moving</option>
-                    <option value="jellyfish">Tim Jellyfish - Moving</option>
-                </select>
-                <button id="addTaskBtn">Tambah Tugas</button>
-            </div>
-        </div>
+            <div class="modal-header">
+                <h2 id="modalTitle">Detail Tugas</h2>
+                <span class="close-btn" id="closeModal">&times;</span>
+            </div>
+            <div class="task-list" id="taskList"></div>
+            <div class="add-task-form">
+                <h3>Tambah Tugas Baru</h3>
+                <input type="text" id="newTaskInput" placeholder="Masukkan tugas baru...">
+                <select id="taskCategory">
+                    <option value="cleanup">Cleanup</option>
+                    <option value="editing">Editing</option>
+                    <option value="mrf">MRF</option>
+                    <option value="other">Lainnya</option>
+                </select>
+                <select id="teamSelect">
+                    <option value="">Pilih Tim (opsional)</option>
+                    <option value="lele">Tim Lele - Bengkong</option>
+                    <option value="walrus">Tim Walrus - Tanjung Uma</option>
+                    <option value="oyster">Tim Oyster - Setokok</option>
+                    <option value="dugong">Tim Dugong - Moving</option>
+                    <option value="jellyfish">Tim Jellyfish - Moving</option>
+                </select>
+                <button id="addTaskBtn">Tambah Tugas</button>
+            </div>
+        </div>
     </div>
     
-    <!-- Loading Indicator -->
-    <div class="loading" id="loading">⏳ Generating schedule...</div>
+    <div class="loading" id="loading">⏳ Loading...</div>
     
     <script>
+        // BARU: URL Web App Google Apps Script Anda akan ditaruh di sini
+        const SCRIPT_URL = "MASUKKAN_URL_SCRIPT_ANDA_DI_SINI"; 
+
         // Data struktur untuk menyimpan jadwal
         let scheduleData = {};
         let currentMonth = new Date().getMonth();
         let currentYear = new Date().getFullYear();
         let selectedDate = null;
         
-        // Teams configuration
-        const teams = {
-            lele: { name: "Tim Lele", location: "Bengkong" },
-            walrus: { name: "Tim Walrus", location: "Tanjung Uma" },
-            oyster: { name: "Tim Oyster", location: "Setokok" },
-            dugong: { name: "Tim Dugong", location: "Moving" },
-            jellyfish: { name: "Tim Jellyfish", location: "Moving" }
-        };
-        
-        // Template jadwal mingguan berdasarkan dokumen
-        const weeklyTemplate = {
-            1: {
-                tasks: [
-                    "2-3 times cleanup shooting",
-                    "Cleanup footage",
-                    "MRF footage",
-                    "Thematic timelapse",
-                    "Select 10 best raw photos & videos [cleanup, MRF]",
-                    "Provide landscape & portrait version",
-                    "Edit plastic adventure of the month + 1 requested simple video"
-                ]
-            },
-            2: {
-                tasks: [
-                    "2-3 times cleanup shooting",
-                    "Cleanup footage with moving crew",
-                    "Thematic timelapse",
-                    "MRF footage",
-                    "Provide landscape & portrait version",
-                    "Select 10 best raw photos & videos [cleanup, MRF]",
-                    "Edit 2-3 requested simple videos"
-                ]
-            },
-            3: {
-                tasks: [
-                    "2-3 times cleanup shooting",
-                    "Cleanup footage",
-                    "MRF footage",
-                    "Thematic timelapse",
-                    "Crew highlight",
-                    "Select 10 best raw photos & videos [cleanup, MRF]",
-                    "Provide landscape & portrait version",
-                    "Edit 2-3 requested simple videos"
-                ]
-            },
-            4: {
-                tasks: [
-                    "2-3 times cleanup shooting",
-                    "Cleanup footage with moving crew",
-                    "MRF footage",
-                    "Thematic timelapse",
-                    "Select 10 best raw photos & videos [cleanup, MRF]",
-                    "Provide landscape & portrait version",
-                    "Edit 2-3 requested simple videos"
-                ]
-            }
-        };
+        // [ ... Sisa konstanta teams dan weeklyTemplate tetap sama ... ]
+         // Teams configuration
+        const teams = {
+            lele: { name: "Tim Lele", location: "Bengkong" },
+            walrus: { name: "Tim Walrus", location: "Tanjung Uma" },
+            oyster: { name: "Tim Oyster", location: "Setokok" },
+            dugong: { name: "Tim Dugong", location: "Moving" },
+            jellyfish: { name: "Tim Jellyfish", location: "Moving" }
+        };
+        
+        // Template jadwal mingguan berdasarkan dokumen
+        const weeklyTemplate = {
+            1: {
+                tasks: [
+                    "2-3 times cleanup shooting",
+                    "Cleanup footage",
+                    "MRF footage",
+                    "Thematic timelapse",
+                    "Select 10 best raw photos & videos [cleanup, MRF]",
+                    "Provide landscape & portrait version",
+                    "Edit plastic adventure of the month + 1 requested simple video"
+                ]
+            },
+            2: {
+                tasks: [
+                    "2-3 times cleanup shooting",
+                    "Cleanup footage with moving crew",
+                    "Thematic timelapse",
+                    "MRF footage",
+                    "Provide landscape & portrait version",
+                    "Select 10 best raw photos & videos [cleanup, MRF]",
+                    "Edit 2-3 requested simple videos"
+                ]
+            },
+            3: {
+                tasks: [
+                    "2-3 times cleanup shooting",
+                    "Cleanup footage",
+                    "MRF footage",
+                    "Thematic timelapse",
+                    "Crew highlight",
+                    "Select 10 best raw photos & videos [cleanup, MRF]",
+                    "Provide landscape & portrait version",
+                    "Edit 2-3 requested simple videos"
+                ]
+            },
+            4: {
+                tasks: [
+                    "2-3 times cleanup shooting",
+                    "Cleanup footage with moving crew",
+                    "MRF footage",
+                    "Thematic timelapse",
+                    "Select 10 best raw photos & videos [cleanup, MRF]",
+                    "Provide landscape & portrait version",
+                    "Edit 2-3 requested simple videos"
+                ]
+            }
+        };
+        // BARU: Helper untuk loading state
+        const loadingIndicator = document.getElementById('loading');
+        function showLoading(message = 'Loading...') {
+            loadingIndicator.textContent = `⏳ ${message}`;
+            loadingIndicator.classList.add('show');
+        }
+
+        function hideLoading() {
+            loadingIndicator.classList.remove('show');
+        }
         
         // Initialize calendar
         function init() {
             populateSelects();
-            loadStoredData();
+            loadStoredData(); // Memuat data lokal dulu
             renderCalendar();
             setupEventListeners();
         }
         
         // Populate month and year selects
         function populateSelects() {
+            // [ ... fungsi ini tetap sama ... ]
             const monthSelect = document.getElementById('monthSelect');
-            const yearSelect = document.getElementById('yearSelect');
-            
-            const months = [
-                'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-                'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-            ];
-            
-            months.forEach((month, index) => {
-                const option = document.createElement('option');
-                option.value = index;
-                option.textContent = month;
-                monthSelect.appendChild(option);
-            });
-            
-            for (let year = 2024; year <= 2030; year++) {
-                const option = document.createElement('option');
-                option.value = year;
-                option.textContent = year;
-                yearSelect.appendChild(option);
-            }
-            
-            monthSelect.value = currentMonth;
-            yearSelect.value = currentYear;
+            const yearSelect = document.getElementById('yearSelect');
+            
+            const months = [
+                'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+            ];
+            
+            months.forEach((month, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = month;
+                monthSelect.appendChild(option);
+            });
+            
+            for (let year = 2024; year <= 2030; year++) {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                yearSelect.appendChild(option);
+            }
+            
+            monthSelect.value = currentMonth;
+            yearSelect.value = currentYear;
         }
         
         // Load stored data from localStorage
@@ -597,577 +643,675 @@
             localStorage.setItem('scheduleData', JSON.stringify(scheduleData));
         }
         
+        // [ ... Sisa fungsi inti seperti getDateKey, renderCalendar, createDayCell, openTaskModal, addTask, editTask, deleteTask, generateMonthlySchedule, generateYearlySchedule, updateStats tetap sama ... ]
         // Generate unique key for date
-        function getDateKey(year, month, day) {
-            return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        }
-        
-        // Render calendar grid
-        function renderCalendar() {
-            const calendar = document.getElementById('calendar');
-            const monthHeader = document.getElementById('monthHeader');
-            const monthNames = [
-                'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-                'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-            ];
-            
-            monthHeader.textContent = `${monthNames[currentMonth]} ${currentYear}`;
-            calendar.innerHTML = '';
-            
-            // Add day headers
-            const dayHeaders = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
-            dayHeaders.forEach(day => {
-                const dayHeader = document.createElement('div');
-                dayHeader.className = 'day-header';
-                dayHeader.textContent = day;
-                calendar.appendChild(dayHeader);
+        function getDateKey(year, month, day) {
+            return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        }
+        
+        // Render calendar grid
+        function renderCalendar() {
+            const calendar = document.getElementById('calendar');
+            const monthHeader = document.getElementById('monthHeader');
+            const monthNames = [
+                'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+            ];
+            
+            monthHeader.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+            calendar.innerHTML = '';
+            
+            // Add day headers
+            const dayHeaders = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+            dayHeaders.forEach(day => {
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'day-header';
+                dayHeader.textContent = day;
+                calendar.appendChild(dayHeader);
+            });
+            
+            // Calculate days in month
+            const firstDay = new Date(currentYear, currentMonth, 1);
+            const lastDay = new Date(currentYear, currentMonth + 1, 0);
+            const prevLastDay = new Date(currentYear, currentMonth, 0);
+            
+            const startDay = firstDay.getDay();
+            const daysInMonth = lastDay.getDate();
+            const daysInPrevMonth = prevLastDay.getDate();
+            
+            // Add previous month days
+            for (let i = startDay - 1; i >= 0; i--) {
+                const dayCell = createDayCell(
+                    daysInPrevMonth - i,
+                    currentMonth - 1,
+                    currentYear,
+                    true
+                );
+                calendar.appendChild(dayCell);
+            }
+            
+            // Add current month days
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayCell = createDayCell(day, currentMonth, currentYear, false);
+                calendar.appendChild(dayCell);
+            }
+            
+            // Add next month days
+            const totalCells = calendar.children.length - 7; // Subtract headers
+            const requiredRows = Math.ceil(totalCells / 7);
+            const requiredCells = requiredRows * 7;
+            const remainingCells = requiredCells - totalCells;
+            for (let day = 1; day <= remainingCells; day++) {
+                const dayCell = createDayCell(
+                    day,
+                    currentMonth + 1,
+                    currentYear,
+                    true
+                );
+                calendar.appendChild(dayCell);
+            }
+            
+            updateStats();
+        }
+        
+        // Create day cell element
+        function createDayCell(day, month, year, isOtherMonth) {
+            const dayCell = document.createElement('div');
+            dayCell.className = 'day-cell';
+            
+            if (isOtherMonth) {
+                dayCell.classList.add('other-month');
+            }
+            
+            const actualMonth = month < 0 ? 11 : month > 11 ? 0 : month;
+            const actualYear = month < 0 ? year - 1 : month > 11 ? year + 1 : year;
+            const dayOfWeek = new Date(actualYear, actualMonth, day).getDay();
+            
+            // Mark weekends
+            if (dayOfWeek === 0 || dayOfWeek === 6) {
+                dayCell.classList.add('weekend');
+            }
+            
+            // Mark today
+            const today = new Date();
+            if (
+                day === today.getDate() &&
+                actualMonth === today.getMonth() &&
+                actualYear === today.getFullYear()
+            ) {
+                dayCell.classList.add('today');
+            }
+            
+            // Day number
+            const dayNumber = document.createElement('div');
+            dayNumber.className = 'day-number';
+            dayNumber.textContent = day;
+            dayCell.appendChild(dayNumber);
+            
+            // Tasks container
+            const dayTasks = document.createElement('div');
+            dayTasks.className = 'day-tasks';
+            
+            // Load tasks for this day
+            const dateKey = getDateKey(actualYear, actualMonth, day);
+            if (scheduleData[dateKey]) {
+                scheduleData[dateKey].forEach(task => {
+                    const taskItem = document.createElement('div');
+                    taskItem.className = `task-item ${task.category || 'other'}`;
+                    taskItem.textContent = task.text;
+                    dayTasks.appendChild(taskItem);
+                });
+            }
+            
+            dayCell.appendChild(dayTasks);
+            
+            // Add click handler
+            dayCell.addEventListener('click', () => {
+                openTaskModal(actualYear, actualMonth, day);
+            });
+            
+            return dayCell;
+        }
+        
+        // Open task modal
+        function openTaskModal(year, month, day) {
+            const modal = document.getElementById('taskModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const taskList = document.getElementById('taskList');
+            
+            selectedDate = { year, month, day };
+            const dateKey = getDateKey(year, month, day);
+            const dayOfWeek = new Date(year, month, day).getDay();
+            const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            
+            modalTitle.textContent = `${dayNames[dayOfWeek]}, ${day}/${month + 1}/${year}`;
+            
+            // Display existing tasks
+            taskList.innerHTML = '';
+            if (scheduleData[dateKey]) {
+                scheduleData[dateKey].forEach((task, index) => {
+                    const taskItem = document.createElement('div');
+                    taskItem.className = 'task-list-item';
+                    
+                    const taskText = document.createElement('span');
+                    taskText.textContent = task.text;
+                    if (task.team) {
+                        taskText.textContent += ` (${teams[task.team].name})`;
+                    }
+                    
+                    const taskActions = document.createElement('div');
+                    taskActions.className = 'task-actions';
+                    
+                    const editBtn = document.createElement('button');
+                    editBtn.className = 'btn-edit';
+                    editBtn.textContent = 'Edit';
+                    editBtn.onclick = () => editTask(dateKey, index);
+                    
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'btn-delete';
+                    deleteBtn.textContent = 'Hapus';
+                    deleteBtn.onclick = () => deleteTask(dateKey, index);
+                    
+                    taskActions.appendChild(editBtn);
+                    taskActions.appendChild(deleteBtn);
+                    
+                    taskItem.appendChild(taskText);
+                    taskItem.appendChild(taskActions);
+                    taskList.appendChild(taskItem);
+                });
+            } else {
+                taskList.innerHTML = '<p style="color: #718096; text-align: center;">Belum ada tugas untuk hari ini</p>';
+            }
+            
+            modal.style.display = 'block';
+        }
+        
+        // Add new task
+        function addTask() {
+            const input = document.getElementById('newTaskInput');
+            const category = document.getElementById('taskCategory').value;
+            const team = document.getElementById('teamSelect').value;
+            
+            if (!input.value.trim()) {
+                alert('Silakan masukkan tugas');
+                return;
+            }
+            
+            if (!selectedDate) return;
+            
+            const dateKey = getDateKey(selectedDate.year, selectedDate.month, selectedDate.day);
+            
+            if (!scheduleData[dateKey]) {
+                scheduleData[dateKey] = [];
+            }
+            
+            const taskData = {
+                text: input.value.trim(),
+                category: category
+            };
+            
+            if (team) {
+                taskData.team = team;
+  _            }
+            
+            scheduleData[dateKey].push(taskData);
+            saveData();
+            
+            input.value = '';
+            document.getElementById('teamSelect').value = '';
+            
+            openTaskModal(selectedDate.year, selectedDate.month, selectedDate.day);
+            renderCalendar();
+        }
+        
+        // Edit task
+        function editTask(dateKey, index) {
+            const task = scheduleData[dateKey][index];
+            const newText = prompt('Edit tugas:', task.text);
+            
+            if (newText !== null && newText.trim()) {
+                scheduleData[dateKey][index].text = newText.trim();
+                saveData();
+                openTaskModal(selectedDate.year, selectedDate.month, selectedDate.day);
+                renderCalendar();
+            }
+        }
+        
+        // Delete task
+        function deleteTask(dateKey, index) {
+            if (confirm('Apakah Anda yakin ingin menghapus tugas ini?')) {
+                scheduleData[dateKey].splice(index, 1);
+                
+                if (scheduleData[dateKey].length === 0) {
+                    delete scheduleData[dateKey];
+                }
+                
+                saveData();
+                openTaskModal(selectedDate.year, selectedDate.month, selectedDate.day);
+                renderCalendar();
+            }
+        }
+        
+        // Generate monthly schedule
+        function generateMonthlySchedule() {
+            if (!confirm('Generate jadwal bulanan akan mengganti jadwal yang ada. Lanjutkan?')) {
+                return;
+            }
+            
+            showLoading('Generating monthly schedule...');
+            
+            // Clear existing schedule for the month
+            const year = currentYear;
+            const month = currentMonth;
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            // Clear month data
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateKey = getDateKey(year, month, day);
+                delete scheduleData[dateKey];
+            }
+            
+            // Determine team rotation for Monday and Wednesday
+            const teamRotation = ['lele', 'walrus', 'oyster', 'dugong', 'jellyfish'];
+            let teamIndex = 0;
+            
+            // Generate schedule
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(year, month, day);
+                const dayOfWeek = date.getDay();
+                const weekOfMonth = Math.ceil((day + new Date(year, month, 1).getDay()) / 7);
+                const dateKey = getDateKey(year, month, day);
+                
+                // Skip weekends
+                if (dayOfWeek === 0 || dayOfWeek === 6) {
+                    continue;
+                }
+                
+                scheduleData[dateKey] = [];
+                
+                // Friday is always editing day
+                if (dayOfWeek === 5) {
+                    scheduleData[dateKey].push(
+                        { text: "Editing Day - Edit requested videos", category: "editing" },
+                        { text: "Select & organize weekly best shots", category: "editing" },
+                        { text: "Prepare landscape & portrait versions", category: "editing" }
+                    );
+                    
+                    // Add week-specific editing tasks
+                    if (weekOfMonth === 1) {
+                        scheduleData[dateKey].push({
+                            text: "Edit plastic adventure of the month",
+                            category: "editing"
+                        });
+                    }
+                    continue;
+                }
+                
+                // Get week template
+                const weekTemplate = weeklyTemplate[weekOfMonth] || weeklyTemplate[4];
+                
+                // Monday (1) and Wednesday (3) - assign teams
+                if (dayOfWeek === 1 || dayOfWeek === 3) {
+                    const assignedTeam = teamRotation[teamIndex % teamRotation.length];
+                    teamIndex++;
+                    
+                    scheduleData[dateKey].push({
+                        text: `Cleanup shooting - ${teams[assignedTeam].name} @ ${teams[assignedTeam].location}`,
+                        category: "cleanup",
+                        team: assignedTeam
+                    });
+                    
+                    // Special case for Bengkong on Tuesday/Thursday
+                    if (assignedTeam === 'lele' && (dayOfWeek === 2 || dayOfWeek === 4)) {
+                        scheduleData[dateKey].push({
+                            text: "River barrier check (usually full)",
+                            category: "cleanup",
+                            team: "lele"
+                        });
+                    }
+                }
+                
+                // Tuesday (2) and Thursday (4) - general tasks
+                if (dayOfWeek === 2 || dayOfWeek === 4) {
+                    scheduleData[dateKey].push(
+                        { text: "MRF footage & documentation", category: "mrf" },
+                        { text: "Thematic timelapse shooting", category: "cleanup" }
+                    );
+                    
+                    // River barrier check for Bengkong
+                    if (dayOfWeek === 2 || dayOfWeek === 4) {
+                        scheduleData[dateKey].push({
+                            text: "Bengkong river barrier check",
+                            category: "cleanup"
+                        });
+                    }
+                }
+                
+                // Add week-specific tasks
+                if (weekOfMonth === 3 && dayOfWeek === 3) {
+                    scheduleData[dateKey].push({
+                        text: "Crew highlight interview/profile",
+                        category: "other"
+                    });
+                }
+                
+                // Moving crew activities (Week 2 and 4)
+                if ((weekOfMonth === 2 || weekOfMonth === 4) && dayOfWeek === 2) {
+                    scheduleData[dateKey].push({
+                        text: "Cleanup footage with moving crew",
+                        category: "cleanup",
+                        team: "dugong"
+                    });
+                }
+            }
+            
+            saveData();
+            renderCalendar();
+            
+            setTimeout(() => {
+                hideLoading();
+                alert('Jadwal bulanan berhasil di-generate!');
+            }, 500);
+        }
+        
+        // Generate yearly schedule
+        function generateYearlySchedule() {
+            if (!confirm('Generate jadwal tahunan akan mengganti SEMUA jadwal yang ada untuk tahun ini. Lanjutkan?')) {
+                return;
+            }
+            
+            showLoading('Generating yearly schedule...');
+            
+            // Save current month
+            const savedMonth = currentMonth;
+            
+            // Generate for all 12 months
+            for (let month = 0; month < 12; month++) {
+                currentMonth = month;
+                
+                // Generate monthly schedule for each month
+                const year = currentYear;
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                
+                // Team rotation continues across months
+                const teamRotation = ['lele', 'walrus', 'oyster', 'dugong', 'jellyfish'];
+                let teamIndex = month * 8; // Approximate team rotations per month
+                
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const date = new Date(year, month, day);
+                    const dayOfWeek = date.getDay();
+                    const weekOfMonth = Math.ceil((day + new Date(year, month, 1).getDay()) / 7);
+                    const dateKey = getDateKey(year, month, day);
+                    
+                    // Skip weekends
+                    if (dayOfWeek === 0 || dayOfWeek === 6) {
+                        continue;
+                    }
+                    
+                    scheduleData[dateKey] = [];
+                    
+                    // Apply same logic as monthly generation
+                    if (dayOfWeek === 5) {
+                        // Friday editing
+                        scheduleData[dateKey].push(
+                            { text: "Editing Day - Edit requested videos", category: "editing" },
+                            { text: "Select & organize weekly best shots", category: "editing" },
+                            { text: "Prepare landscape & portrait versions", category: "editing" }
+                        );
+                        
+                        if (weekOfMonth === 1) {
+                            scheduleData[dateKey].push({
+                                text: "Edit plastic adventure of the month",
+                                category: "editing"
+                            });
+                        }
+                    } else if (dayOfWeek === 1 || dayOfWeek === 3) {
+                        // Monday/Wednesday team assignments
+                        const assignedTeam = teamRotation[teamIndex % teamRotation.length];
+                        teamIndex++;
+                        
+                        scheduleData[dateKey].push({
+                            text: `Cleanup shooting - ${teams[assignedTeam].name} @ ${teams[assignedTeam].location}`,
+                            category: "cleanup",
+                            team: assignedTeam
+                        });
+                    } else if (dayOfWeek === 2 || dayOfWeek === 4) {
+                        // Tuesday/Thursday tasks
+                        scheduleData[dateKey].push(
+                            { text: "MRF footage & documentation", category: "mrf" },
+                            { text: "Thematic timelapse shooting", category: "cleanup" }
+                        );
+                        
+                        if (dayOfWeek === 2 || dayOfWeek === 4) {
+                            scheduleData[dateKey].push({
+                                text: "Bengkong river barrier check",
+                                category: "cleanup"
+                            });
+                        }
+                    }
+                    
+                    // Special monthly tasks
+                    if (day === 1) {
+                        scheduleData[dateKey].push({
+                            text: "Monthly summary video preparation",
+                            category: "editing"
+    _                    });
+                    }
+                }
+            }
+            
+            // Restore current month
+            currentMonth = savedMonth;
+            saveData();
+            renderCalendar();
+            
+            setTimeout(() => {
+                hideLoading();
+                alert('Jadwal tahunan berhasil di-generate!');
+            }, 1000);
+        }
+        
+        // Update statistics
+        function updateStats() {
+            const year = currentYear;
+            const month = currentMonth;
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            let totalTasks = 0;
+            let cleanupCount = 0;
+            let editingCount = 0;
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateKey = getDateKey(year, month, day);
+                if (scheduleData[dateKey]) {
+                    totalTasks += scheduleData[dateKey].length;
+                    
+                    scheduleData[dateKey].forEach(task => {
+                        if (task.category === 'cleanup') cleanupCount++;
+                        if (task.category === 'editing') editingCount++;
+                    });
+                }
+            }
+            
+            // Calculate week progress
+            const today = new Date();
+            let weekProgress = 0;
+            if (today.getMonth() === month && today.getFullYear() === year) {
+                weekProgress = Math.ceil((today.getDate() + new Date(year, month, 1).getDay()) / 7);
+            }
+            
+            document.getElementById('totalTasks').textContent = totalTasks;
+            document.getElementById('cleanupCount').textContent = cleanupCount;
+            document.getElementById('editingCount').textContent = editingCount;
+            document.getElementById('weekProgress').textContent = `${weekProgress}/4`;
+        }
+
+        // --- BARU: FUNGSI UNTUK GOOGLE SHEETS & EXPORT ---
+
+        // Fungsi Simpan ke Google Sheets
+        function saveToGoogleSheets() {
+            if (SCRIPT_URL === "MASUKKAN_URL_SCRIPT_ANDA_DI_SINI") {
+                alert("Harap masukkan URL Apps Script Anda di dalam kode JavaScript terlebih dahulu.");
+                return;
+            }
+            showLoading('Menyimpan ke Google Sheets...');
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify(scheduleData)
+            })
+            .then(res => res.json())
+            .then(data => {
+                hideLoading();
+                alert(data.message);
+            })
+            .catch(error => {
+                hideLoading();
+                alert('Gagal menyimpan data. Cek konsol untuk detail.');
+                console.error('Error saving to Google Sheets:', error);
             });
-            
-            // Calculate days in month
-            const firstDay = new Date(currentYear, currentMonth, 1);
-            const lastDay = new Date(currentYear, currentMonth + 1, 0);
-            const prevLastDay = new Date(currentYear, currentMonth, 0);
-            
-            const startDay = firstDay.getDay();
-            const daysInMonth = lastDay.getDate();
-            const daysInPrevMonth = prevLastDay.getDate();
-            
-            // Add previous month days
-            for (let i = startDay - 1; i >= 0; i--) {
-                const dayCell = createDayCell(
-                    daysInPrevMonth - i,
-                    currentMonth - 1,
-                    currentYear,
-                    true
-                );
-                calendar.appendChild(dayCell);
-            }
-            
-            // Add current month days
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dayCell = createDayCell(day, currentMonth, currentYear, false);
-                calendar.appendChild(dayCell);
-            }
-            
-            // Add next month days
-            const totalCells = calendar.children.length - 7; // Subtract headers
-            const remainingCells = 35 - totalCells;
-            for (let day = 1; day <= remainingCells; day++) {
-                const dayCell = createDayCell(
-                    day,
-                    currentMonth + 1,
-                    currentYear,
-                    true
-                );
-                calendar.appendChild(dayCell);
-            }
-            
-            updateStats();
         }
-        
-        // Create day cell element
-        function createDayCell(day, month, year, isOtherMonth) {
-            const dayCell = document.createElement('div');
-            dayCell.className = 'day-cell';
-            
-            if (isOtherMonth) {
-                dayCell.classList.add('other-month');
+
+        // Fungsi Muat dari Google Sheets
+        function loadFromGoogleSheets() {
+            if (SCRIPT_URL === "MASUKKAN_URL_SCRIPT_ANDA_DI_SINI") {
+                alert("Harap masukkan URL Apps Script Anda di dalam kode JavaScript terlebih dahulu.");
+                return;
             }
-            
-            const actualMonth = month < 0 ? 11 : month > 11 ? 0 : month;
-            const actualYear = month < 0 ? year - 1 : month > 11 ? year + 1 : year;
-            const dayOfWeek = new Date(actualYear, actualMonth, day).getDay();
-            
-            // Mark weekends
-            if (dayOfWeek === 0 || dayOfWeek === 6) {
-                dayCell.classList.add('weekend');
-            }
-            
-            // Mark today
-            const today = new Date();
-            if (
-                day === today.getDate() &&
-                actualMonth === today.getMonth() &&
-                actualYear === today.getFullYear()
-            ) {
-                dayCell.classList.add('today');
-            }
-            
-            // Day number
-            const dayNumber = document.createElement('div');
-            dayNumber.className = 'day-number';
-            dayNumber.textContent = day;
-            dayCell.appendChild(dayNumber);
-            
-            // Tasks container
-            const dayTasks = document.createElement('div');
-            dayTasks.className = 'day-tasks';
-            
-            // Load tasks for this day
-            const dateKey = getDateKey(actualYear, actualMonth, day);
-            if (scheduleData[dateKey]) {
-                scheduleData[dateKey].forEach(task => {
-                    const taskItem = document.createElement('div');
-                    taskItem.className = `task-item ${task.category || 'other'}`;
-                    taskItem.textContent = task.text;
-                    dayTasks.appendChild(taskItem);
-                });
-            }
-            
-            dayCell.appendChild(dayTasks);
-            
-            // Add click handler
-            dayCell.addEventListener('click', () => {
-                openTaskModal(actualYear, actualMonth, day);
+            showLoading('Memuat dari Google Sheets...');
+            fetch(SCRIPT_URL)
+            .then(res => res.json())
+            .then(data => {
+                if (Object.keys(data).length > 0) {
+                    scheduleData = data;
+                    saveData(); // Simpan juga ke lokal
+                    renderCalendar();
+                    alert('Data berhasil dimuat dari Google Sheets!');
+                } else {
+                    alert('Tidak ada data yang tersimpan di Google Sheets.');
+                }
+                hideLoading();
+            })
+            .catch(error => {
+                hideLoading();
+                alert('Gagal memuat data. Cek konsol untuk detail.');
+                console.error('Error loading from Google Sheets:', error);
             });
-            
-            return dayCell;
         }
-        
-        // Open task modal
-        function openTaskModal(year, month, day) {
-            const modal = document.getElementById('taskModal');
-            const modalTitle = document.getElementById('modalTitle');
-            const taskList = document.getElementById('taskList');
+
+        // Fungsi Export ke PDF
+        function exportToPDF() {
+            showLoading('Membuat PDF...');
+            const { jsPDF } = window.jspdf;
+            const content = document.getElementById('captureArea');
             
-            selectedDate = { year, month, day };
-            const dateKey = getDateKey(year, month, day);
-            const dayOfWeek = new Date(year, month, day).getDay();
-            const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-            
-            modalTitle.textContent = `${dayNames[dayOfWeek]}, ${day}/${month + 1}/${year}`;
-            
-            // Display existing tasks
-            taskList.innerHTML = '';
-            if (scheduleData[dateKey]) {
-                scheduleData[dateKey].forEach((task, index) => {
-                    const taskItem = document.createElement('div');
-                    taskItem.className = 'task-list-item';
-                    
-                    const taskText = document.createElement('span');
-                    taskText.textContent = task.text;
-                    if (task.team) {
-                        taskText.textContent += ` (${teams[task.team].name})`;
-                    }
-                    
-                    const taskActions = document.createElement('div');
-                    taskActions.className = 'task-actions';
-                    
-                    const editBtn = document.createElement('button');
-                    editBtn.className = 'btn-edit';
-                    editBtn.textContent = 'Edit';
-                    editBtn.onclick = () => editTask(dateKey, index);
-                    
-                    const deleteBtn = document.createElement('button');
-                    deleteBtn.className = 'btn-delete';
-                    deleteBtn.textContent = 'Hapus';
-                    deleteBtn.onclick = () => deleteTask(dateKey, index);
-                    
-                    taskActions.appendChild(editBtn);
-                    taskActions.appendChild(deleteBtn);
-                    
-                    taskItem.appendChild(taskText);
-                    taskItem.appendChild(taskActions);
-                    taskList.appendChild(taskItem);
+            html2canvas(content, { scale: 2 }).then(canvas => {
+                const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                const pdf = new jsPDF({
+                    orientation: 'landscape',
+                    unit: 'pt',
+                    format: [canvas.width, canvas.height]
                 });
-            } else {
-                taskList.innerHTML = '<p style="color: #718096; text-align: center;">Belum ada tugas untuk hari ini</p>';
-            }
-            
-            modal.style.display = 'block';
+                
+                pdf.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
+                pdf.save(`kalender-konten-${currentYear}-${currentMonth + 1}.pdf`);
+                hideLoading();
+            });
         }
-        
-        // Add new task
-        function addTask() {
-            const input = document.getElementById('newTaskInput');
-            const category = document.getElementById('taskCategory').value;
-            const team = document.getElementById('teamSelect').value;
-            
-            if (!input.value.trim()) {
-                alert('Silakan masukkan tugas');
-                return;
-            }
-            
-            if (!selectedDate) return;
-            
-            const dateKey = getDateKey(selectedDate.year, selectedDate.month, selectedDate.day);
-            
-            if (!scheduleData[dateKey]) {
-                scheduleData[dateKey] = [];
-            }
-            
-            const taskData = {
-                text: input.value.trim(),
-                category: category
-            };
-            
-            if (team) {
-                taskData.team = team;
-            }
-            
-            scheduleData[dateKey].push(taskData);
-            saveData();
-            
-            input.value = '';
-            document.getElementById('teamSelect').value = '';
-            
-            openTaskModal(selectedDate.year, selectedDate.month, selectedDate.day);
-            renderCalendar();
+
+        // Fungsi Export ke Gambar (PNG)
+        function exportToImage() {
+            showLoading('Membuat Gambar...');
+            const content = document.getElementById('captureArea');
+
+            html2canvas(content, { scale: 2 }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `kalender-konten-${currentYear}-${currentMonth + 1}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                hideLoading();
+            });
         }
-        
-        // Edit task
-        function editTask(dateKey, index) {
-            const task = scheduleData[dateKey][index];
-            const newText = prompt('Edit tugas:', task.text);
-            
-            if (newText !== null && newText.trim()) {
-                scheduleData[dateKey][index].text = newText.trim();
-                saveData();
-                openTaskModal(selectedDate.year, selectedDate.month, selectedDate.day);
-                renderCalendar();
-            }
-        }
-        
-        // Delete task
-        function deleteTask(dateKey, index) {
-            if (confirm('Apakah Anda yakin ingin menghapus tugas ini?')) {
-                scheduleData[dateKey].splice(index, 1);
-                
-                if (scheduleData[dateKey].length === 0) {
-                    delete scheduleData[dateKey];
-                }
-                
-                saveData();
-                openTaskModal(selectedDate.year, selectedDate.month, selectedDate.day);
-                renderCalendar();
-            }
-        }
-        
-        // Generate monthly schedule
-        function generateMonthlySchedule() {
-            if (!confirm('Generate jadwal bulanan akan mengganti jadwal yang ada. Lanjutkan?')) {
-                return;
-            }
-            
-            document.getElementById('loading').classList.add('show');
-            
-            // Clear existing schedule for the month
-            const year = currentYear;
-            const month = currentMonth;
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            
-            // Clear month data
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dateKey = getDateKey(year, month, day);
-                delete scheduleData[dateKey];
-            }
-            
-            // Determine team rotation for Monday and Wednesday
-            const teamRotation = ['lele', 'walrus', 'oyster', 'dugong', 'jellyfish'];
-            let teamIndex = 0;
-            
-            // Generate schedule
-            for (let day = 1; day <= daysInMonth; day++) {
-                const date = new Date(year, month, day);
-                const dayOfWeek = date.getDay();
-                const weekOfMonth = Math.ceil((day + new Date(year, month, 1).getDay()) / 7);
-                const dateKey = getDateKey(year, month, day);
-                
-                // Skip weekends
-                if (dayOfWeek === 0 || dayOfWeek === 6) {
-                    continue;
-                }
-                
-                scheduleData[dateKey] = [];
-                
-                // Friday is always editing day
-                if (dayOfWeek === 5) {
-                    scheduleData[dateKey].push(
-                        { text: "Editing Day - Edit requested videos", category: "editing" },
-                        { text: "Select & organize weekly best shots", category: "editing" },
-                        { text: "Prepare landscape & portrait versions", category: "editing" }
-                    );
-                    
-                    // Add week-specific editing tasks
-                    if (weekOfMonth === 1) {
-                        scheduleData[dateKey].push({
-                            text: "Edit plastic adventure of the month",
-                            category: "editing"
-                        });
-                    }
-                    continue;
-                }
-                
-                // Get week template
-                const weekTemplate = weeklyTemplate[weekOfMonth] || weeklyTemplate[4];
-                
-                // Monday (1) and Wednesday (3) - assign teams
-                if (dayOfWeek === 1 || dayOfWeek === 3) {
-                    const assignedTeam = teamRotation[teamIndex % teamRotation.length];
-                    teamIndex++;
-                    
-                    scheduleData[dateKey].push({
-                        text: `Cleanup shooting - ${teams[assignedTeam].name} @ ${teams[assignedTeam].location}`,
-                        category: "cleanup",
-                        team: assignedTeam
-                    });
-                    
-                    // Special case for Bengkong on Tuesday/Thursday
-                    if (assignedTeam === 'lele' && (dayOfWeek === 2 || dayOfWeek === 4)) {
-                        scheduleData[dateKey].push({
-                            text: "River barrier check (usually full)",
-                            category: "cleanup",
-                            team: "lele"
-                        });
-                    }
-                }
-                
-                // Tuesday (2) and Thursday (4) - general tasks
-                if (dayOfWeek === 2 || dayOfWeek === 4) {
-                    scheduleData[dateKey].push(
-                        { text: "MRF footage & documentation", category: "mrf" },
-                        { text: "Thematic timelapse shooting", category: "cleanup" }
-                    );
-                    
-                    // River barrier check for Bengkong
-                    if (dayOfWeek === 2 || dayOfWeek === 4) {
-                        scheduleData[dateKey].push({
-                            text: "Bengkong river barrier check",
-                            category: "cleanup"
-                        });
-                    }
-                }
-                
-                // Add week-specific tasks
-                if (weekOfMonth === 3 && dayOfWeek === 3) {
-                    scheduleData[dateKey].push({
-                        text: "Crew highlight interview/profile",
-                        category: "other"
-                    });
-                }
-                
-                // Moving crew activities (Week 2 and 4)
-                if ((weekOfMonth === 2 || weekOfMonth === 4) && dayOfWeek === 2) {
-                    scheduleData[dateKey].push({
-                        text: "Cleanup footage with moving crew",
-                        category: "cleanup",
-                        team: "dugong"
-                    });
-                }
-            }
-            
-            saveData();
-            renderCalendar();
-            
-            setTimeout(() => {
-                document.getElementById('loading').classList.remove('show');
-                alert('Jadwal bulanan berhasil di-generate!');
-            }, 500);
-        }
-        
-        // Generate yearly schedule
-        function generateYearlySchedule() {
-            if (!confirm('Generate jadwal tahunan akan mengganti SEMUA jadwal yang ada untuk tahun ini. Lanjutkan?')) {
-                return;
-            }
-            
-            document.getElementById('loading').classList.add('show');
-            
-            // Save current month
-            const savedMonth = currentMonth;
-            
-            // Generate for all 12 months
-            for (let month = 0; month < 12; month++) {
-                currentMonth = month;
-                
-                // Generate monthly schedule for each month
-                const year = currentYear;
-                const daysInMonth = new Date(year, month + 1, 0).getDate();
-                
-                // Team rotation continues across months
-                const teamRotation = ['lele', 'walrus', 'oyster', 'dugong', 'jellyfish'];
-                let teamIndex = month * 8; // Approximate team rotations per month
-                
-                for (let day = 1; day <= daysInMonth; day++) {
-                    const date = new Date(year, month, day);
-                    const dayOfWeek = date.getDay();
-                    const weekOfMonth = Math.ceil((day + new Date(year, month, 1).getDay()) / 7);
-                    const dateKey = getDateKey(year, month, day);
-                    
-                    // Skip weekends
-                    if (dayOfWeek === 0 || dayOfWeek === 6) {
-                        continue;
-                    }
-                    
-                    scheduleData[dateKey] = [];
-                    
-                    // Apply same logic as monthly generation
-                    if (dayOfWeek === 5) {
-                        // Friday editing
-                        scheduleData[dateKey].push(
-                            { text: "Editing Day - Edit requested videos", category: "editing" },
-                            { text: "Select & organize weekly best shots", category: "editing" },
-                            { text: "Prepare landscape & portrait versions", category: "editing" }
-                        );
-                        
-                        if (weekOfMonth === 1) {
-                            scheduleData[dateKey].push({
-                                text: "Edit plastic adventure of the month",
-                                category: "editing"
-                            });
-                        }
-                    } else if (dayOfWeek === 1 || dayOfWeek === 3) {
-                        // Monday/Wednesday team assignments
-                        const assignedTeam = teamRotation[teamIndex % teamRotation.length];
-                        teamIndex++;
-                        
-                        scheduleData[dateKey].push({
-                            text: `Cleanup shooting - ${teams[assignedTeam].name} @ ${teams[assignedTeam].location}`,
-                            category: "cleanup",
-                            team: assignedTeam
-                        });
-                    } else if (dayOfWeek === 2 || dayOfWeek === 4) {
-                        // Tuesday/Thursday tasks
-                        scheduleData[dateKey].push(
-                            { text: "MRF footage & documentation", category: "mrf" },
-                            { text: "Thematic timelapse shooting", category: "cleanup" }
-                        );
-                        
-                        if (dayOfWeek === 2 || dayOfWeek === 4) {
-                            scheduleData[dateKey].push({
-                                text: "Bengkong river barrier check",
-                                category: "cleanup"
-                            });
-                        }
-                    }
-                    
-                    // Special monthly tasks
-                    if (day === 1) {
-                        scheduleData[dateKey].push({
-                            text: "Monthly summary video preparation",
-                            category: "editing"
-                        });
-                    }
-                }
-            }
-            
-            // Restore current month
-            currentMonth = savedMonth;
-            saveData();
-            renderCalendar();
-            
-            setTimeout(() => {
-                document.getElementById('loading').classList.remove('show');
-                alert('Jadwal tahunan berhasil di-generate!');
-            }, 1000);
-        }
-        
-        // Update statistics
-        function updateStats() {
-            const year = currentYear;
-            const month = currentMonth;
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            
-            let totalTasks = 0;
-            let cleanupCount = 0;
-            let editingCount = 0;
-            
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dateKey = getDateKey(year, month, day);
-                if (scheduleData[dateKey]) {
-                    totalTasks += scheduleData[dateKey].length;
-                    
-                    scheduleData[dateKey].forEach(task => {
-                        if (task.category === 'cleanup') cleanupCount++;
-                        if (task.category === 'editing') editingCount++;
-                    });
-                }
-            }
-            
-            // Calculate week progress
-            const today = new Date();
-            let weekProgress = 0;
-            if (today.getMonth() === month && today.getFullYear() === year) {
-                weekProgress = Math.ceil((today.getDate() + new Date(year, month, 1).getDay()) / 7);
-            }
-            
-            document.getElementById('totalTasks').textContent = totalTasks;
-            document.getElementById('cleanupCount').textContent = cleanupCount;
-            document.getElementById('editingCount').textContent = editingCount;
-            document.getElementById('weekProgress').textContent = `${weekProgress}/4`;
-        }
-        
+
+        // ---------------------------------------------------
+
         // Setup event listeners
         function setupEventListeners() {
+            // [ ... event listener lama tetap sama ... ]
             // Month navigation
-            document.getElementById('prevMonth').addEventListener('click', () => {
-                currentMonth--;
-                if (currentMonth < 0) {
-                    currentMonth = 11;
-                    currentYear--;
-                }
-                document.getElementById('monthSelect').value = currentMonth;
-                document.getElementById('yearSelect').value = currentYear;
-                renderCalendar();
-            });
-            
-            document.getElementById('nextMonth').addEventListener('click', () => {
-                currentMonth++;
-                if (currentMonth > 11) {
-                    currentMonth = 0;
-                    currentYear++;
-                }
-                document.getElementById('monthSelect').value = currentMonth;
-                document.getElementById('yearSelect').value = currentYear;
-                renderCalendar();
-            });
-            
-            // Month/Year selects
-            document.getElementById('monthSelect').addEventListener('change', (e) => {
-                currentMonth = parseInt(e.target.value);
-                renderCalendar();
-            });
-            
-            document.getElementById('yearSelect').addEventListener('change', (e) => {
-                currentYear = parseInt(e.target.value);
-                renderCalendar();
-            });
-            
-            // Today button
-            document.getElementById('todayBtn').addEventListener('click', () => {
-                const today = new Date();
-                currentMonth = today.getMonth();
-                currentYear = today.getFullYear();
-                document.getElementById('monthSelect').value = currentMonth;
-                document.getElementById('yearSelect').value = currentYear;
-                renderCalendar();
-            });
-            
-            // Generate buttons
-            document.getElementById('generateMonth').addEventListener('click', generateMonthlySchedule);
-            document.getElementById('generateYear').addEventListener('click', generateYearlySchedule);
-            
-            // Modal controls
-            document.getElementById('closeModal').addEventListener('click', () => {
-                document.getElementById('taskModal').style.display = 'none';
-            });
-            
-            document.getElementById('addTaskBtn').addEventListener('click', addTask);
-            
-            // Close modal on outside click
-            window.addEventListener('click', (e) => {
-                const modal = document.getElementById('taskModal');
-                if (e.target === modal) {
-                    modal.style.display = 'none';
-                }
-            });
-            
-            // Enter key for adding task
-            document.getElementById('newTaskInput').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    addTask();
-                }
-            });
+            document.getElementById('prevMonth').addEventListener('click', () => {
+                currentMonth--;
+                if (currentMonth < 0) {
+                    currentMonth = 11;
+                    currentYear--;
+                }
+                document.getElementById('monthSelect').value = currentMonth;
+                document.getElementById('yearSelect').value = currentYear;
+                renderCalendar();
+            });
+            
+            document.getElementById('nextMonth').addEventListener('click', () => {
+                currentMonth++;
+                if (currentMonth > 11) {
+                    currentMonth = 0;
+                    currentYear++;
+                }
+                document.getElementById('monthSelect').value = currentMonth;
+                document.getElementById('yearSelect').value = currentYear;
+                renderCalendar();
+            });
+            
+            // Month/Year selects
+            document.getElementById('monthSelect').addEventListener('change', (e) => {
+                currentMonth = parseInt(e.target.value);
+                renderCalendar();
+            });
+            
+            document.getElementById('yearSelect').addEventListener('change', (e) => {
+                currentYear = parseInt(e.target.value);
+                renderCalendar();
+            });
+            
+            // Today button
+            document.getElementById('todayBtn').addEventListener('click', () => {
+                const today = new Date();
+                currentMonth = today.getMonth();
+                currentYear = today.getFullYear();
+                document.getElementById('monthSelect').value = currentMonth;
+                document.getElementById('yearSelect').value = currentYear;
+                renderCalendar();
+            });
+            
+            // Generate buttons
+            document.getElementById('generateMonth').addEventListener('click', generateMonthlySchedule);
+            document.getElementById('generateYear').addEventListener('click', generateYearlySchedule);
+            
+            // Modal controls
+            document.getElementById('closeModal').addEventListener('click', () => {
+                document.getElementById('taskModal').style.display = 'none';
+            });
+            
+            document.getElementById('addTaskBtn').addEventListener('click', addTask);
+            
+            // Close modal on outside click
+            window.addEventListener('click', (e) => {
+                const modal = document.getElementById('taskModal');
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+            
+            // Enter key for adding task
+            document.getElementById('newTaskInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    addTask();
+                }
+            });
+
+            // BARU: Event listener untuk tombol-tombol baru
+            document.getElementById('saveToSheetsBtn').addEventListener('click', saveToGoogleSheets);
+            document.getElementById('loadFromSheetsBtn').addEventListener('click', loadFromGoogleSheets);
+            document.getElementById('exportPdfBtn').addEventListener('click', exportToPDF);
+            document.getElementById('exportImgBtn').addEventListener('click', exportToImage);
         }
         
         // Initialize on load
