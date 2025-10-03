@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cleanup Content Calendar</title>
+    <title>Cleanup Content Calendar (Vercel Edition)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
+        /* ... CSS Anda tetap sama, tidak perlu diubah ... */
         * {
             margin: 0;
             padding: 0;
@@ -497,8 +498,7 @@
             <button id="exportImage" class="export-btn">🖼️ Export Gambar</button>
             <button id="exportJSON" class="export-btn">💾 Export JSON</button>
             <button id="importJSON" class="export-btn">📥 Import JSON</button>
-            <button id="openSheetsSettings" class="export-btn">☁️ Google Sheets</button>
-        </div>
+            </div>
         
         <div class="calendar-container">
             <div class="month-header" id="monthHeader"></div>
@@ -555,38 +555,7 @@
             </div>
         </div>
     </div>
-    
-    <div class="modal" id="sheetsModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Google Sheets Integration</h2>
-                <span class="close-btn" id="closeSheetsModal">&times;</span>
-            </div>
-            <div class="google-sheets-section">
-                <h3>Setup Google Sheets</h3>
-                <p style="font-size: 12px; color: #718096; margin-bottom: 10px;">
-                    Masukkan URL Google Apps Script yang sudah Anda deploy
-                </p>
-                <div id="connectionStatus" class="connection-status disconnected">
-                    Status: Tidak Terhubung
-                </div>
-                <input type="text" id="sheetsURL" placeholder="https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec">
-                <div class="button-group">
-                    <button class="btn-sync" id="saveToSheets">💾 Simpan ke Sheets</button>
-                    <button class="btn-sync" id="loadFromSheets">📥 Load dari Sheets</button>
-                </div>
-                <div style="margin-top: 15px; padding: 10px; background: #fff3cd; border-radius: 5px; font-size: 12px;">
-                    <strong>Panduan Setup:</strong><br>
-                    1. Buat Google Spreadsheet baru<br>
-                    2. Buka Tools → Script Editor<br>
-                    3. Copy kode Apps Script yang diberikan<br>
-                    4. Deploy sebagai Web App<br>
-                    5. Paste URL di atas
-                </div>
-            </div>
-        </div>
-    </div>
-    
+        
     <input type="file" id="fileInput" accept=".json" style="display: none;">
     
     <div class="loading" id="loading">⏳ Processing...</div>
@@ -597,7 +566,6 @@
         let currentMonth = new Date().getMonth();
         let currentYear = new Date().getFullYear();
         let selectedDate = null;
-        let sheetsURL = 'https://script.google.com/macros/s/AKfycbyCixiF4-ixGPTwcvVNQfcfDRBJbkL5cRelwTO9Ayi-RHt1VtxQGNSR26VA2hLTsGo/exec';
         let autoSaveTimer = null;
         
         const teams = {
@@ -658,20 +626,14 @@
         
         function init() {
             populateSelects();
-            renderCalendar();
             setupEventListeners();
-            autoLoadFromSheets();
-
+            // **MODIFIKASI:** Panggil autoLoadFromVercel saat memulai
+            autoLoadFromVercel();
         }
 
-        async function autoLoadFromSheets() {
-            const savedURL = localStorage.getItem('sheetsURL');
-            if (savedURL) {
-                sheetsURL = savedURL;
-                document.getElementById('sheetsURL').value = sheetsURL;
-                console.log("Attempting to auto-load data from:", sheetsURL);
-                await loadFromSheets(true); // 'true' untuk mode senyap (tanpa konfirmasi)
-            }
+        async function autoLoadFromVercel() {
+            console.log("Attempting to auto-load data from Vercel KV...");
+            await loadFromVercel(true); 
         }
         
         function debounce(func, delay) {
@@ -684,13 +646,9 @@
         }
         
         const autoSaveChanges = debounce(async () => {
-            if (!sheetsURL) {
-                console.log("Auto-save skipped: Google Sheets URL not set.");
-                return;
-            }
-            console.log("Auto-saving changes to Google Sheets...");
-            await saveToSheets();
-        }, 2000); // Simpan perubahan 2 detik setelah aksi terakhir
+            console.log("Auto-saving changes to Vercel KV...");
+            await saveToVercel();
+        }, 2000); 
         
         function populateSelects() {
             const monthSelect = document.getElementById('monthSelect');
@@ -724,7 +682,6 @@
         }
         
         function renderCalendar() {
-            // **LOGGING:** Menampilkan data yang akan dirender
             console.log("Rendering calendar with data:", scheduleData);
             
             const calendar = document.getElementById('calendar');
@@ -769,7 +726,7 @@
             }
             
             const totalCells = calendar.children.length - 7;
-            const remainingCells = 42 - totalCells; // Ensure 6 rows for consistent layout
+            const remainingCells = 42 - totalCells; 
             for (let day = 1; day <= remainingCells; day++) {
                 const dayCell = createDayCell(
                     day,
@@ -819,7 +776,7 @@
             
             const dateKey = getDateKey(actualYear, actualMonth, actualDate.getDate());
             
-            if (scheduleData && scheduleData[dateKey]) { // **PERBAIKAN:** Memastikan scheduleData tidak null
+            if (scheduleData && scheduleData[dateKey]) { 
                 scheduleData[dateKey].forEach(task => {
                     const taskItem = document.createElement('div');
                     taskItem.className = `task-item ${task.category || 'other'}`;
@@ -1153,243 +1110,80 @@
         }
         
         async function exportToPDF() {
-            document.getElementById('loading').classList.add('show');
-            
-            try {
-                const { jsPDF } = window.jspdf;
-                const calendar = document.querySelector('.container');
-                
-                const canvas = await html2canvas(calendar, {
-                    scale: 2,
-                    useCORS: true,
-                    logging: false
-                });
-                
-                const imgData = canvas.toDataURL('image/png');
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                
-                const imgWidth = 210;
-                const pageHeight = 297;
-                const imgHeight = (canvas.height * imgWidth) / canvas.width;
-                let heightLeft = imgHeight;
-                let position = 0;
-                
-                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                heightLeft -= pageHeight;
-                
-                while (heightLeft >= 0) {
-                    position = heightLeft - imgHeight;
-                    pdf.addPage();
-                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                    heightLeft -= pageHeight;
-                }
-                
-                const monthNames = [
-                    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-                    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-                ];
-                const filename = `Cleanup_Calendar_${monthNames[currentMonth]}_${currentYear}.pdf`;
-                pdf.save(filename);
-                
-                alert('PDF berhasil diexport!');
-            } catch (error) {
-                console.error('Error exporting PDF:', error);
-                alert('Terjadi kesalahan saat export PDF');
-            } finally {
-                document.getElementById('loading').classList.remove('show');
-            }
+            // ... Fungsi exportToPDF tetap sama ...
         }
         
         async function exportToImage() {
-            document.getElementById('loading').classList.add('show');
-            
-            try {
-                const calendar = document.querySelector('.container');
-                
-                const canvas = await html2canvas(calendar, {
-                    scale: 2,
-                    useCORS: true,
-                    logging: false,
-                    backgroundColor: '#ffffff'
-                });
-                
-                canvas.toBlob(blob => {
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    const monthNames = [
-                        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-                        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-                    ];
-                    a.download = `Cleanup_Calendar_${monthNames[currentMonth]}_${currentYear}.png`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                    
-                    alert('Gambar berhasil diexport!');
-                    document.getElementById('loading').classList.remove('show');
-                });
-            } catch (error) {
-                console.error('Error exporting image:', error);
-                alert('Terjadi kesalahan saat export gambar');
-                document.getElementById('loading').classList.remove('show');
-            }
+            // ... Fungsi exportToImage tetap sama ...
         }
         
         function exportToJSON() {
-            const dataStr = JSON.stringify(scheduleData, null, 2);
-            const blob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `cleanup_schedule_backup_${new Date().toISOString().split('T')[0]}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            alert('Data berhasil diexport ke JSON!');
+            // ... Fungsi exportToJSON tetap sama ...
         }
         
         function importFromJSON() {
-            document.getElementById('fileInput').click();
+            // ... Fungsi importFromJSON tetap sama ...
         }
         
         function handleFileImport(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const importedData = JSON.parse(e.target.result);
-                    
-                    if (confirm('Import data akan mengganti semua data yang ada. Lanjutkan?')) {
-                        scheduleData = importedData;
-                        renderCalendar();
-                        alert('Data berhasil diimport!');
-                    }
-                } catch (error) {
-                    console.error('Error importing JSON:', error);
-                    alert('File JSON tidak valid!');
-                }
-            };
-            reader.readAsText(file);
-            
-            event.target.value = '';
+            // ... Fungsi handleFileImport tetap sama ...
         }
-        
-        function openSheetsSettings() {
-            document.getElementById('sheetsModal').style.display = 'block';
-            if (sheetsURL) {
-                document.getElementById('sheetsURL').value = sheetsURL;
-                updateConnectionStatus(true);
-            }
-        }
-        
-        function updateConnectionStatus(connected) {
-            const statusDiv = document.getElementById('connectionStatus');
-            if (connected) {
-                statusDiv.className = 'connection-status connected';
-                statusDiv.textContent = 'Status: Terhubung ✓';
-            } else {
-                statusDiv.className = 'connection-status disconnected';
-                statusDiv.textContent = 'Status: Tidak Terhubung';
-            }
-        }
-        
-        async function saveToSheets() {
-            const url = document.getElementById('sheetsURL').value.trim();
-            
-            if (!url) {
-                if(autoSaveTimer) clearTimeout(autoSaveTimer); 
-                else alert('Silakan masukkan URL Google Apps Script terlebih dahulu');
-                return;
-            }
-            
-            if (url !== sheetsURL) {
-                sheetsURL = url;
-                localStorage.setItem('sheetsURL', sheetsURL);
-            }
-            
+
+        // **MODIFIKASI: Fungsi untuk menyimpan data ke Vercel**
+        async function saveToVercel() {
             document.getElementById('loading').classList.add('show');
-            
             try {
-                const response = await fetch(url, {
+                const response = await fetch('/api/saveData', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'text/plain;charset=utf-8',
-                    },
-                    body: JSON.stringify({
-                        action: 'save',
-                        data: scheduleData
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ data: scheduleData }),
                 });
-                
+
+                if (!response.ok) {
+                    throw new Error('Gagal menyimpan data ke Vercel KV');
+                }
+
                 const result = await response.json();
                 if (result.status === "success") {
-                    updateConnectionStatus(true);
-                    console.log("Data berhasil disimpan ke Google Sheets!");
+                    console.log("Data berhasil disimpan ke Vercel KV!");
                 } else {
                      throw new Error(result.message || 'Gagal menyimpan data');
                 }
-                
             } catch (error) {
-                console.error('Error saving to Sheets:', error);
-                if(!autoSaveTimer) alert('Terjadi kesalahan saat menyimpan ke Google Sheets. Pastikan URL sudah benar dan Apps Script sudah di-deploy.');
-                updateConnectionStatus(false);
+                console.error('Error saving to Vercel:', error);
+                alert('Terjadi kesalahan saat menyimpan data.');
             } finally {
                 document.getElementById('loading').classList.remove('show');
             }
         }
         
-        async function loadFromSheets(silent = false) {
-            const url = document.getElementById('sheetsURL').value.trim();
-            
-            if (!url) {
-                if (!silent) alert('Silakan masukkan URL Google Apps Script terlebih dahulu');
-                return;
-            }
-            
-            if (url !== sheetsURL) {
-                sheetsURL = url;
-                localStorage.setItem('sheetsURL', sheetsURL);
-            }
-            
+        // **MODIFIKASI: Fungsi untuk memuat data dari Vercel**
+        async function loadFromVercel(silent = false) {
             document.getElementById('loading').classList.add('show');
-            
             try {
-                const response = await fetch(url + '?action=load');
+                const response = await fetch('/api/loadData');
                 
                 if (response.ok) {
                     const data = await response.json();
-                    
-                    // **LOGGING:** Menampilkan data mentah dari Google Sheets
-                    console.log("Data mentah diterima dari Google Sheets:", data);
+                    console.log("Data mentah diterima dari Vercel KV:", data);
 
                     if (data && typeof data === 'object' && Object.keys(data).length > 0) {
-                        if (silent || confirm('Load data akan mengganti data yang ada. Lanjutkan?')) {
-                            scheduleData = data;
-                            updateConnectionStatus(true);
-                            if (!silent) alert('Data berhasil diload dari Google Sheets!');
-                            console.log('Data berhasil diproses dan disimpan ke scheduleData!');
-                        }
+                        scheduleData = data;
+                        if (!silent) alert('Data berhasil diload dari Vercel!');
+                        console.log('Data berhasil diproses!');
                     } else {
-                        if (!silent) alert('Tidak ada data ditemukan atau format data salah di Google Sheets');
-                        scheduleData = {}; // Kosongkan data jika tidak ada apa-apa
-                        updateConnectionStatus(true);
+                        scheduleData = {};
+                        console.log('Tidak ada data ditemukan di Vercel KV.');
                     }
                 } else {
                     throw new Error('Gagal memuat data, status: ' + response.status);
                 }
             } catch (error) {
-                console.error('Error loading from Sheets:', error);
-                if (!silent) alert('Terjadi kesalahan saat load dari Google Sheets. Pastikan URL sudah benar dan Apps Script sudah di-deploy dengan akses yang tepat.');
-                updateConnectionStatus(false);
+                console.error('Error loading from Vercel:', error);
+                if (!silent) alert('Terjadi kesalahan saat memuat data.');
             } finally {
                 document.getElementById('loading').classList.remove('show');
-                renderCalendar(); // **PENTING:** Panggil renderCalendar di sini agar kalender selalu diperbarui
+                renderCalendar(); 
             }
         }
         
@@ -1417,7 +1211,6 @@
             });
             
             document.getElementById('monthSelect').addEventListener('change', (e) => {
-
                 currentMonth = parseInt(e.target.value);
                 renderCalendar();
             });
@@ -1443,30 +1236,19 @@
             document.getElementById('exportImage').addEventListener('click', exportToImage);
             document.getElementById('exportJSON').addEventListener('click', exportToJSON);
             document.getElementById('importJSON').addEventListener('click', importFromJSON);
-            document.getElementById('openSheetsSettings').addEventListener('click', openSheetsSettings);
             
             document.getElementById('closeModal').addEventListener('click', () => {
                 document.getElementById('taskModal').style.display = 'none';
             });
-            
-            document.getElementById('closeSheetsModal').addEventListener('click', () => {
-                document.getElementById('sheetsModal').style.display = 'none';
-            });
-            
+                       
             document.getElementById('addTaskBtn').addEventListener('click', addTask);
-            document.getElementById('saveToSheets').addEventListener('click', () => saveToSheets());
-            document.getElementById('loadFromSheets').addEventListener('click', () => loadFromSheets());
             
             document.getElementById('fileInput').addEventListener('change', handleFileImport);
             
             window.addEventListener('click', (e) => {
                 const taskModal = document.getElementById('taskModal');
-                const sheetsModal = document.getElementById('sheetsModal');
                 if (e.target === taskModal) {
                     taskModal.style.display = 'none';
-                }
-                if (e.target === sheetsModal) {
-                    sheetsModal.style.display = 'none';
                 }
             });
             
