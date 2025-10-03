@@ -598,6 +598,7 @@
         let currentYear = new Date().getFullYear();
         let selectedDate = null;
         let sheetsURL = '';
+        let autoSaveTimer = null;
         
         const teams = {
             lele: { name: "Tim Lele", location: "Bengkong" },
@@ -659,7 +660,37 @@
             populateSelects();
             renderCalendar();
             setupEventListeners();
+            autoLoadFromSheets();
+
         }
+
+        async function autoLoadFromSheets() {
+            const savedURL = localStorage.getItem('sheetsURL');
+            if (savedURL) {
+                sheetsURL = savedURL;
+                document.getElementById('sheetsURL').value = sheetsURL;
+                console.log("Attempting to auto-load data from:", sheetsURL);
+                await loadFromSheets(true); // 'true' untuk mode senyap (tanpa konfirmasi)
+            }
+        }
+        
+        function debounce(func, delay) {
+            return function(...args) {
+                clearTimeout(autoSaveTimer);
+                autoSaveTimer = setTimeout(() => {
+                    func.apply(this, args);
+                }, delay);
+            };
+        }
+        
+        const autoSaveChanges = debounce(async () => {
+            if (!sheetsURL) {
+                console.log("Auto-save skipped: Google Sheets URL not set.");
+                return;
+            }
+            console.log("Auto-saving changes to Google Sheets...");
+            await saveToSheets();
+        }, 2000); // Simpan perubahan 2 detik setelah aksi terakhir
         
         function populateSelects() {
             const monthSelect = document.getElementById('monthSelect');
@@ -735,7 +766,7 @@
             }
             
             const totalCells = calendar.children.length - 7;
-            const remainingCells = 35 - totalCells;
+            const remainingCells = 42 - totalCells; // Ensure 6 rows for consistent layout
             for (let day = 1; day <= remainingCells; day++) {
                 const dayCell = createDayCell(
                     day,
@@ -757,9 +788,10 @@
                 dayCell.classList.add('other-month');
             }
             
-            const actualMonth = month < 0 ? 11 : month > 11 ? 0 : month;
-            const actualYear = month < 0 ? year - 1 : month > 11 ? year + 1 : year;
-            const dayOfWeek = new Date(actualYear, actualMonth, day).getDay();
+            const actualDate = new Date(year, month, day);
+            const actualMonth = actualDate.getMonth();
+            const actualYear = actualDate.getFullYear();
+            const dayOfWeek = actualDate.getDay();
             
             if (dayOfWeek === 0 || dayOfWeek === 6) {
                 dayCell.classList.add('weekend');
@@ -776,13 +808,13 @@
             
             const dayNumber = document.createElement('div');
             dayNumber.className = 'day-number';
-            dayNumber.textContent = day;
+            dayNumber.textContent = actualDate.getDate();
             dayCell.appendChild(dayNumber);
             
             const dayTasks = document.createElement('div');
             dayTasks.className = 'day-tasks';
             
-            const dateKey = getDateKey(actualYear, actualMonth, day);
+            const dateKey = getDateKey(actualYear, actualMonth, actualDate.getDate());
             if (scheduleData[dateKey]) {
                 scheduleData[dateKey].forEach(task => {
                     const taskItem = document.createElement('div');
@@ -795,7 +827,7 @@
             dayCell.appendChild(dayTasks);
             
             dayCell.addEventListener('click', () => {
-                openTaskModal(actualYear, actualMonth, day);
+                openTaskModal(actualYear, actualMonth, actualDate.getDate());
             });
             
             return dayCell;
@@ -886,6 +918,7 @@
             
             openTaskModal(selectedDate.year, selectedDate.month, selectedDate.day);
             renderCalendar();
+            autoSaveChanges();
         }
         
         function editTask(dateKey, index) {
@@ -896,6 +929,7 @@
                 scheduleData[dateKey][index].text = newText.trim();
                 openTaskModal(selectedDate.year, selectedDate.month, selectedDate.day);
                 renderCalendar();
+                autoSaveChanges();
             }
         }
         
@@ -909,6 +943,7 @@
                 
                 openTaskModal(selectedDate.year, selectedDate.month, selectedDate.day);
                 renderCalendar();
+                autoSaveChanges();
             }
         }
         
@@ -1000,6 +1035,7 @@
                 document.getElementById('loading').classList.remove('show');
                 alert('Jadwal bulanan berhasil di-generate!');
             }, 500);
+            autoSaveChanges();
         }
         
         function generateYearlySchedule() {
@@ -1076,6 +1112,7 @@
                 document.getElementById('loading').classList.remove('show');
                 alert('Jadwal tahunan berhasil di-generate!');
             }, 1000);
+            autoSaveChanges();
         }
         
         function updateStats() {
@@ -1111,7 +1148,6 @@
             document.getElementById('weekProgress').textContent = `${weekProgress}/4`;
         }
         
-        // Export to PDF
         async function exportToPDF() {
             document.getElementById('loading').classList.add('show');
             
@@ -1160,7 +1196,6 @@
             }
         }
         
-        // Export to Image
         async function exportToImage() {
             document.getElementById('loading').classList.add('show');
             
@@ -1198,7 +1233,6 @@
             }
         }
         
-        // Export to JSON
         function exportToJSON() {
             const dataStr = JSON.stringify(scheduleData, null, 2);
             const blob = new Blob([dataStr], { type: 'application/json' });
@@ -1214,7 +1248,6 @@
             alert('Data berhasil diexport ke JSON!');
         }
         
-        // Import from JSON
         function importFromJSON() {
             document.getElementById('fileInput').click();
         }
@@ -1243,7 +1276,6 @@
             event.target.value = '';
         }
         
-        // Google Sheets Integration
         function openSheetsSettings() {
             document.getElementById('sheetsModal').style.display = 'block';
             if (sheetsURL) {
@@ -1267,19 +1299,23 @@
             const url = document.getElementById('sheetsURL').value.trim();
             
             if (!url) {
-                alert('Silakan masukkan URL Google Apps Script terlebih dahulu');
+                if(autoSaveTimer) clearTimeout(autoSaveTimer); // Mencegah alert saat auto-save
+                else alert('Silakan masukkan URL Google Apps Script terlebih dahulu');
                 return;
             }
             
-            sheetsURL = url;
+            if (url !== sheetsURL) {
+                sheetsURL = url;
+                localStorage.setItem('sheetsURL', sheetsURL);
+            }
+            
             document.getElementById('loading').classList.add('show');
             
             try {
                 const response = await fetch(url, {
                     method: 'POST',
-                    mode: 'no-cors',
                     headers: {
-                        'Content-Type': 'application/json',
+                        'Content-Type': 'text/plain;charset=utf-8',
                     },
                     body: JSON.stringify({
                         action: 'save',
@@ -1287,52 +1323,63 @@
                     })
                 });
                 
-                updateConnectionStatus(true);
-                alert('Data berhasil disimpan ke Google Sheets!');
+                const result = await response.json();
+                if (result.status === "success") {
+                    updateConnectionStatus(true);
+                    console.log("Data berhasil disimpan ke Google Sheets!");
+                } else {
+                     throw new Error(result.message || 'Gagal menyimpan data');
+                }
+                
             } catch (error) {
                 console.error('Error saving to Sheets:', error);
-                alert('Terjadi kesalahan saat menyimpan ke Google Sheets. Pastikan URL sudah benar dan Apps Script sudah di-deploy.');
+                if(!autoSaveTimer) alert('Terjadi kesalahan saat menyimpan ke Google Sheets. Pastikan URL sudah benar dan Apps Script sudah di-deploy.');
+                updateConnectionStatus(false);
             } finally {
                 document.getElementById('loading').classList.remove('show');
             }
         }
         
-        async function loadFromSheets() {
+        async function loadFromSheets(silent = false) {
             const url = document.getElementById('sheetsURL').value.trim();
             
             if (!url) {
-                alert('Silakan masukkan URL Google Apps Script terlebih dahulu');
+                if (!silent) alert('Silakan masukkan URL Google Apps Script terlebih dahulu');
                 return;
             }
             
-            sheetsURL = url;
+            if (url !== sheetsURL) {
+                sheetsURL = url;
+                localStorage.setItem('sheetsURL', sheetsURL);
+            }
+            
             document.getElementById('loading').classList.add('show');
             
             try {
-                const response = await fetch(url + '?action=load', {
-                    method: 'GET',
-                    mode: 'cors'
-                });
+                const response = await fetch(url + '?action=load');
                 
                 if (response.ok) {
                     const data = await response.json();
                     
-                    if (data.scheduleData) {
-                        if (confirm('Load data akan mengganti data yang ada. Lanjutkan?')) {
-                            scheduleData = data.scheduleData;
+                    if (data && Object.keys(data).length > 0) {
+                        if (silent || confirm('Load data akan mengganti data yang ada. Lanjutkan?')) {
+                            scheduleData = data;
                             renderCalendar();
                             updateConnectionStatus(true);
-                            alert('Data berhasil diload dari Google Sheets!');
+                            if (!silent) alert('Data berhasil diload dari Google Sheets!');
+                            console.log('Data berhasil diload dari Google Sheets!');
                         }
                     } else {
-                        alert('Tidak ada data ditemukan di Google Sheets');
+                        if (!silent) alert('Tidak ada data ditemukan di Google Sheets');
+                        updateConnectionStatus(true);
                     }
                 } else {
-                    throw new Error('Failed to load data');
+                    throw new Error('Gagal memuat data, status: ' + response.status);
                 }
             } catch (error) {
                 console.error('Error loading from Sheets:', error);
-                alert('Terjadi kesalahan saat load dari Google Sheets. Pastikan URL sudah benar dan Apps Script sudah di-deploy dengan akses yang tepat.');
+                if (!silent) alert('Terjadi kesalahan saat load dari Google Sheets. Pastikan URL sudah benar dan Apps Script sudah di-deploy dengan akses yang tepat.');
+                updateConnectionStatus(false);
             } finally {
                 document.getElementById('loading').classList.remove('show');
             }
@@ -1398,8 +1445,8 @@
             });
             
             document.getElementById('addTaskBtn').addEventListener('click', addTask);
-            document.getElementById('saveToSheets').addEventListener('click', saveToSheets);
-            document.getElementById('loadFromSheets').addEventListener('click', loadFromSheets);
+            document.getElementById('saveToSheets').addEventListener('click', () => saveToSheets());
+            document.getElementById('loadFromSheets').addEventListener('click', () => loadFromSheets());
             
             document.getElementById('fileInput').addEventListener('change', handleFileImport);
             
