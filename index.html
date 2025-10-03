@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cleanup Content Calendar</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        /* Reset dan Base Styles */
         * {
             margin: 0;
             padding: 0;
@@ -19,7 +20,6 @@
             padding: 10px;
         }
         
-        /* Container */
         .container {
             max-width: 1400px;
             margin: 0 auto;
@@ -29,7 +29,6 @@
             overflow: hidden;
         }
         
-        /* Header */
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -42,7 +41,6 @@
             margin-bottom: 10px;
         }
         
-        /* Controls */
         .controls {
             display: flex;
             flex-wrap: wrap;
@@ -69,6 +67,22 @@
             transform: translateY(-2px);
         }
         
+        .controls button.export-btn {
+            background: #48bb78;
+        }
+        
+        .controls button.export-btn:hover {
+            background: #38a169;
+        }
+        
+        .controls button.danger-btn {
+            background: #f56565;
+        }
+        
+        .controls button.danger-btn:hover {
+            background: #e53e3e;
+        }
+        
         .controls select {
             padding: 10px;
             border: 2px solid #e9ecef;
@@ -77,7 +91,6 @@
             background: white;
         }
         
-        /* Calendar Grid */
         .calendar-container {
             padding: 20px;
         }
@@ -171,7 +184,6 @@
             background: #e7e3ff;
         }
         
-        /* Task Detail Modal */
         .modal {
             display: none;
             position: fixed;
@@ -287,7 +299,7 @@
             border-radius: 10px;
         }
         
-        .add-task-form input, .add-task-form select {
+        .add-task-form input, .add-task-form select, .add-task-form textarea {
             width: 100%;
             padding: 10px;
             margin: 5px 0;
@@ -311,7 +323,6 @@
             background: #38a169;
         }
         
-        /* Stats Panel */
         .stats-panel {
             padding: 20px;
             background: #f8f9fa;
@@ -348,7 +359,87 @@
             margin-top: 5px;
         }
         
-        /* Responsive Design */
+        .google-sheets-section {
+            padding: 15px;
+            background: #e6f7ff;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+        
+        .google-sheets-section h3 {
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+        
+        .google-sheets-section input {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #cbd5e0;
+            border-radius: 5px;
+        }
+        
+        .google-sheets-section .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .google-sheets-section button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-sync {
+            background: #4299e1;
+            color: white;
+        }
+        
+        .btn-sync:hover {
+            background: #3182ce;
+        }
+        
+        .connection-status {
+            padding: 8px;
+            margin: 10px 0;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 12px;
+        }
+        
+        .connection-status.connected {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .connection-status.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            font-size: 18px;
+            color: #667eea;
+            display: none;
+            z-index: 2000;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
         @media (max-width: 768px) {
             .calendar-grid {
                 gap: 2px;
@@ -385,49 +476,35 @@
                 margin: 10% auto;
             }
         }
-        
-        /* Loading Spinner */
-        .loading {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 20px;
-            color: #667eea;
-            display: none;
-        }
-        
-        .loading.show {
-            display: block;
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
         <div class="header">
             <h1>📸 Cleanup Content Calendar</h1>
             <p>Sistem Penjadwalan Konten untuk Tim Cleanup</p>
         </div>
         
-        <!-- Controls -->
         <div class="controls">
             <button id="prevMonth">◀ Bulan Sebelumnya</button>
             <select id="monthSelect"></select>
             <select id="yearSelect"></select>
             <button id="nextMonth">Bulan Berikutnya ▶</button>
+            <button id="todayBtn">Hari Ini</button>
             <button id="generateMonth">Generate Jadwal Bulanan</button>
             <button id="generateYear">Generate Jadwal Tahunan</button>
-            <button id="todayBtn">Hari Ini</button>
+            <button id="exportPDF" class="export-btn">📄 Export PDF</button>
+            <button id="exportImage" class="export-btn">🖼️ Export Gambar</button>
+            <button id="exportJSON" class="export-btn">💾 Export JSON</button>
+            <button id="importJSON" class="export-btn">📥 Import JSON</button>
+            <button id="openSheetsSettings" class="export-btn">☁️ Google Sheets</button>
         </div>
         
-        <!-- Calendar Container -->
         <div class="calendar-container">
             <div class="month-header" id="monthHeader"></div>
             <div class="calendar-grid" id="calendar"></div>
         </div>
         
-        <!-- Statistics Panel -->
         <div class="stats-panel">
             <div class="stats-grid">
                 <div class="stat-card">
@@ -450,7 +527,6 @@
         </div>
     </div>
     
-    <!-- Task Detail Modal -->
     <div class="modal" id="taskModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -480,17 +556,49 @@
         </div>
     </div>
     
-    <!-- Loading Indicator -->
-    <div class="loading" id="loading">⏳ Generating schedule...</div>
+    <div class="modal" id="sheetsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Google Sheets Integration</h2>
+                <span class="close-btn" id="closeSheetsModal">&times;</span>
+            </div>
+            <div class="google-sheets-section">
+                <h3>Setup Google Sheets</h3>
+                <p style="font-size: 12px; color: #718096; margin-bottom: 10px;">
+                    Masukkan URL Google Apps Script yang sudah Anda deploy
+                </p>
+                <div id="connectionStatus" class="connection-status disconnected">
+                    Status: Tidak Terhubung
+                </div>
+                <input type="text" id="sheetsURL" placeholder="https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec">
+                <div class="button-group">
+                    <button class="btn-sync" id="saveToSheets">💾 Simpan ke Sheets</button>
+                    <button class="btn-sync" id="loadFromSheets">📥 Load dari Sheets</button>
+                </div>
+                <div style="margin-top: 15px; padding: 10px; background: #fff3cd; border-radius: 5px; font-size: 12px;">
+                    <strong>Panduan Setup:</strong><br>
+                    1. Buat Google Spreadsheet baru<br>
+                    2. Buka Tools → Script Editor<br>
+                    3. Copy kode Apps Script yang diberikan<br>
+                    4. Deploy sebagai Web App<br>
+                    5. Paste URL di atas
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <input type="file" id="fileInput" accept=".json" style="display: none;">
+    
+    <div class="loading" id="loading">⏳ Processing...</div>
     
     <script>
-        // Data struktur untuk menyimpan jadwal
+        // Data storage (in-memory for current session)
         let scheduleData = {};
         let currentMonth = new Date().getMonth();
         let currentYear = new Date().getFullYear();
         let selectedDate = null;
+        let sheetsURL = '';
         
-        // Teams configuration
         const teams = {
             lele: { name: "Tim Lele", location: "Bengkong" },
             walrus: { name: "Tim Walrus", location: "Tanjung Uma" },
@@ -499,7 +607,6 @@
             jellyfish: { name: "Tim Jellyfish", location: "Moving" }
         };
         
-        // Template jadwal mingguan berdasarkan dokumen
         const weeklyTemplate = {
             1: {
                 tasks: [
@@ -548,15 +655,12 @@
             }
         };
         
-        // Initialize calendar
         function init() {
             populateSelects();
-            loadStoredData();
             renderCalendar();
             setupEventListeners();
         }
         
-        // Populate month and year selects
         function populateSelects() {
             const monthSelect = document.getElementById('monthSelect');
             const yearSelect = document.getElementById('yearSelect');
@@ -584,25 +688,10 @@
             yearSelect.value = currentYear;
         }
         
-        // Load stored data from localStorage
-        function loadStoredData() {
-            const stored = localStorage.getItem('scheduleData');
-            if (stored) {
-                scheduleData = JSON.parse(stored);
-            }
-        }
-        
-        // Save data to localStorage
-        function saveData() {
-            localStorage.setItem('scheduleData', JSON.stringify(scheduleData));
-        }
-        
-        // Generate unique key for date
         function getDateKey(year, month, day) {
             return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         }
         
-        // Render calendar grid
         function renderCalendar() {
             const calendar = document.getElementById('calendar');
             const monthHeader = document.getElementById('monthHeader');
@@ -614,7 +703,6 @@
             monthHeader.textContent = `${monthNames[currentMonth]} ${currentYear}`;
             calendar.innerHTML = '';
             
-            // Add day headers
             const dayHeaders = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
             dayHeaders.forEach(day => {
                 const dayHeader = document.createElement('div');
@@ -623,7 +711,6 @@
                 calendar.appendChild(dayHeader);
             });
             
-            // Calculate days in month
             const firstDay = new Date(currentYear, currentMonth, 1);
             const lastDay = new Date(currentYear, currentMonth + 1, 0);
             const prevLastDay = new Date(currentYear, currentMonth, 0);
@@ -632,7 +719,6 @@
             const daysInMonth = lastDay.getDate();
             const daysInPrevMonth = prevLastDay.getDate();
             
-            // Add previous month days
             for (let i = startDay - 1; i >= 0; i--) {
                 const dayCell = createDayCell(
                     daysInPrevMonth - i,
@@ -643,14 +729,12 @@
                 calendar.appendChild(dayCell);
             }
             
-            // Add current month days
             for (let day = 1; day <= daysInMonth; day++) {
                 const dayCell = createDayCell(day, currentMonth, currentYear, false);
                 calendar.appendChild(dayCell);
             }
             
-            // Add next month days
-            const totalCells = calendar.children.length - 7; // Subtract headers
+            const totalCells = calendar.children.length - 7;
             const remainingCells = 35 - totalCells;
             for (let day = 1; day <= remainingCells; day++) {
                 const dayCell = createDayCell(
@@ -665,7 +749,6 @@
             updateStats();
         }
         
-        // Create day cell element
         function createDayCell(day, month, year, isOtherMonth) {
             const dayCell = document.createElement('div');
             dayCell.className = 'day-cell';
@@ -678,12 +761,10 @@
             const actualYear = month < 0 ? year - 1 : month > 11 ? year + 1 : year;
             const dayOfWeek = new Date(actualYear, actualMonth, day).getDay();
             
-            // Mark weekends
             if (dayOfWeek === 0 || dayOfWeek === 6) {
                 dayCell.classList.add('weekend');
             }
             
-            // Mark today
             const today = new Date();
             if (
                 day === today.getDate() &&
@@ -693,17 +774,14 @@
                 dayCell.classList.add('today');
             }
             
-            // Day number
             const dayNumber = document.createElement('div');
             dayNumber.className = 'day-number';
             dayNumber.textContent = day;
             dayCell.appendChild(dayNumber);
             
-            // Tasks container
             const dayTasks = document.createElement('div');
             dayTasks.className = 'day-tasks';
             
-            // Load tasks for this day
             const dateKey = getDateKey(actualYear, actualMonth, day);
             if (scheduleData[dateKey]) {
                 scheduleData[dateKey].forEach(task => {
@@ -716,7 +794,6 @@
             
             dayCell.appendChild(dayTasks);
             
-            // Add click handler
             dayCell.addEventListener('click', () => {
                 openTaskModal(actualYear, actualMonth, day);
             });
@@ -724,7 +801,6 @@
             return dayCell;
         }
         
-        // Open task modal
         function openTaskModal(year, month, day) {
             const modal = document.getElementById('taskModal');
             const modalTitle = document.getElementById('modalTitle');
@@ -737,7 +813,6 @@
             
             modalTitle.textContent = `${dayNames[dayOfWeek]}, ${day}/${month + 1}/${year}`;
             
-            // Display existing tasks
             taskList.innerHTML = '';
             if (scheduleData[dateKey]) {
                 scheduleData[dateKey].forEach((task, index) => {
@@ -777,7 +852,6 @@
             modal.style.display = 'block';
         }
         
-        // Add new task
         function addTask() {
             const input = document.getElementById('newTaskInput');
             const category = document.getElementById('taskCategory').value;
@@ -806,7 +880,6 @@
             }
             
             scheduleData[dateKey].push(taskData);
-            saveData();
             
             input.value = '';
             document.getElementById('teamSelect').value = '';
@@ -815,20 +888,17 @@
             renderCalendar();
         }
         
-        // Edit task
         function editTask(dateKey, index) {
             const task = scheduleData[dateKey][index];
             const newText = prompt('Edit tugas:', task.text);
             
             if (newText !== null && newText.trim()) {
                 scheduleData[dateKey][index].text = newText.trim();
-                saveData();
                 openTaskModal(selectedDate.year, selectedDate.month, selectedDate.day);
                 renderCalendar();
             }
         }
         
-        // Delete task
         function deleteTask(dateKey, index) {
             if (confirm('Apakah Anda yakin ingin menghapus tugas ini?')) {
                 scheduleData[dateKey].splice(index, 1);
@@ -837,13 +907,11 @@
                     delete scheduleData[dateKey];
                 }
                 
-                saveData();
                 openTaskModal(selectedDate.year, selectedDate.month, selectedDate.day);
                 renderCalendar();
             }
         }
         
-        // Generate monthly schedule
         function generateMonthlySchedule() {
             if (!confirm('Generate jadwal bulanan akan mengganti jadwal yang ada. Lanjutkan?')) {
                 return;
@@ -851,36 +919,30 @@
             
             document.getElementById('loading').classList.add('show');
             
-            // Clear existing schedule for the month
             const year = currentYear;
             const month = currentMonth;
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             
-            // Clear month data
             for (let day = 1; day <= daysInMonth; day++) {
                 const dateKey = getDateKey(year, month, day);
                 delete scheduleData[dateKey];
             }
             
-            // Determine team rotation for Monday and Wednesday
             const teamRotation = ['lele', 'walrus', 'oyster', 'dugong', 'jellyfish'];
             let teamIndex = 0;
             
-            // Generate schedule
             for (let day = 1; day <= daysInMonth; day++) {
                 const date = new Date(year, month, day);
                 const dayOfWeek = date.getDay();
                 const weekOfMonth = Math.ceil((day + new Date(year, month, 1).getDay()) / 7);
                 const dateKey = getDateKey(year, month, day);
                 
-                // Skip weekends
                 if (dayOfWeek === 0 || dayOfWeek === 6) {
                     continue;
                 }
                 
                 scheduleData[dateKey] = [];
                 
-                // Friday is always editing day
                 if (dayOfWeek === 5) {
                     scheduleData[dateKey].push(
                         { text: "Editing Day - Edit requested videos", category: "editing" },
@@ -888,7 +950,6 @@
                         { text: "Prepare landscape & portrait versions", category: "editing" }
                     );
                     
-                    // Add week-specific editing tasks
                     if (weekOfMonth === 1) {
                         scheduleData[dateKey].push({
                             text: "Edit plastic adventure of the month",
@@ -898,10 +959,6 @@
                     continue;
                 }
                 
-                // Get week template
-                const weekTemplate = weeklyTemplate[weekOfMonth] || weeklyTemplate[4];
-                
-                // Monday (1) and Wednesday (3) - assign teams
                 if (dayOfWeek === 1 || dayOfWeek === 3) {
                     const assignedTeam = teamRotation[teamIndex % teamRotation.length];
                     teamIndex++;
@@ -911,34 +968,16 @@
                         category: "cleanup",
                         team: assignedTeam
                     });
-                    
-                    // Special case for Bengkong on Tuesday/Thursday
-                    if (assignedTeam === 'lele' && (dayOfWeek === 2 || dayOfWeek === 4)) {
-                        scheduleData[dateKey].push({
-                            text: "River barrier check (usually full)",
-                            category: "cleanup",
-                            team: "lele"
-                        });
-                    }
                 }
                 
-                // Tuesday (2) and Thursday (4) - general tasks
                 if (dayOfWeek === 2 || dayOfWeek === 4) {
                     scheduleData[dateKey].push(
                         { text: "MRF footage & documentation", category: "mrf" },
-                        { text: "Thematic timelapse shooting", category: "cleanup" }
+                        { text: "Thematic timelapse shooting", category: "cleanup" },
+                        { text: "Bengkong river barrier check", category: "cleanup" }
                     );
-                    
-                    // River barrier check for Bengkong
-                    if (dayOfWeek === 2 || dayOfWeek === 4) {
-                        scheduleData[dateKey].push({
-                            text: "Bengkong river barrier check",
-                            category: "cleanup"
-                        });
-                    }
                 }
                 
-                // Add week-specific tasks
                 if (weekOfMonth === 3 && dayOfWeek === 3) {
                     scheduleData[dateKey].push({
                         text: "Crew highlight interview/profile",
@@ -946,7 +985,6 @@
                     });
                 }
                 
-                // Moving crew activities (Week 2 and 4)
                 if ((weekOfMonth === 2 || weekOfMonth === 4) && dayOfWeek === 2) {
                     scheduleData[dateKey].push({
                         text: "Cleanup footage with moving crew",
@@ -956,7 +994,6 @@
                 }
             }
             
-            saveData();
             renderCalendar();
             
             setTimeout(() => {
@@ -965,7 +1002,6 @@
             }, 500);
         }
         
-        // Generate yearly schedule
         function generateYearlySchedule() {
             if (!confirm('Generate jadwal tahunan akan mengganti SEMUA jadwal yang ada untuk tahun ini. Lanjutkan?')) {
                 return;
@@ -973,20 +1009,14 @@
             
             document.getElementById('loading').classList.add('show');
             
-            // Save current month
             const savedMonth = currentMonth;
             
-            // Generate for all 12 months
             for (let month = 0; month < 12; month++) {
-                currentMonth = month;
-                
-                // Generate monthly schedule for each month
                 const year = currentYear;
                 const daysInMonth = new Date(year, month + 1, 0).getDate();
                 
-                // Team rotation continues across months
                 const teamRotation = ['lele', 'walrus', 'oyster', 'dugong', 'jellyfish'];
-                let teamIndex = month * 8; // Approximate team rotations per month
+                let teamIndex = month * 8;
                 
                 for (let day = 1; day <= daysInMonth; day++) {
                     const date = new Date(year, month, day);
@@ -994,16 +1024,13 @@
                     const weekOfMonth = Math.ceil((day + new Date(year, month, 1).getDay()) / 7);
                     const dateKey = getDateKey(year, month, day);
                     
-                    // Skip weekends
                     if (dayOfWeek === 0 || dayOfWeek === 6) {
                         continue;
                     }
                     
                     scheduleData[dateKey] = [];
                     
-                    // Apply same logic as monthly generation
                     if (dayOfWeek === 5) {
-                        // Friday editing
                         scheduleData[dateKey].push(
                             { text: "Editing Day - Edit requested videos", category: "editing" },
                             { text: "Select & organize weekly best shots", category: "editing" },
@@ -1017,7 +1044,6 @@
                             });
                         }
                     } else if (dayOfWeek === 1 || dayOfWeek === 3) {
-                        // Monday/Wednesday team assignments
                         const assignedTeam = teamRotation[teamIndex % teamRotation.length];
                         teamIndex++;
                         
@@ -1027,21 +1053,13 @@
                             team: assignedTeam
                         });
                     } else if (dayOfWeek === 2 || dayOfWeek === 4) {
-                        // Tuesday/Thursday tasks
                         scheduleData[dateKey].push(
                             { text: "MRF footage & documentation", category: "mrf" },
-                            { text: "Thematic timelapse shooting", category: "cleanup" }
+                            { text: "Thematic timelapse shooting", category: "cleanup" },
+                            { text: "Bengkong river barrier check", category: "cleanup" }
                         );
-                        
-                        if (dayOfWeek === 2 || dayOfWeek === 4) {
-                            scheduleData[dateKey].push({
-                                text: "Bengkong river barrier check",
-                                category: "cleanup"
-                            });
-                        }
                     }
                     
-                    // Special monthly tasks
                     if (day === 1) {
                         scheduleData[dateKey].push({
                             text: "Monthly summary video preparation",
@@ -1051,9 +1069,7 @@
                 }
             }
             
-            // Restore current month
             currentMonth = savedMonth;
-            saveData();
             renderCalendar();
             
             setTimeout(() => {
@@ -1062,7 +1078,6 @@
             }, 1000);
         }
         
-        // Update statistics
         function updateStats() {
             const year = currentYear;
             const month = currentMonth;
@@ -1084,7 +1099,6 @@
                 }
             }
             
-            // Calculate week progress
             const today = new Date();
             let weekProgress = 0;
             if (today.getMonth() === month && today.getFullYear() === year) {
@@ -1097,9 +1111,234 @@
             document.getElementById('weekProgress').textContent = `${weekProgress}/4`;
         }
         
-        // Setup event listeners
+        // Export to PDF
+        async function exportToPDF() {
+            document.getElementById('loading').classList.add('show');
+            
+            try {
+                const { jsPDF } = window.jspdf;
+                const calendar = document.querySelector('.container');
+                
+                const canvas = await html2canvas(calendar, {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false
+                });
+                
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                
+                const imgWidth = 210;
+                const pageHeight = 297;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                let heightLeft = imgHeight;
+                let position = 0;
+                
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+                
+                while (heightLeft >= 0) {
+                    position = heightLeft - imgHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+                
+                const monthNames = [
+                    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+                ];
+                const filename = `Cleanup_Calendar_${monthNames[currentMonth]}_${currentYear}.pdf`;
+                pdf.save(filename);
+                
+                alert('PDF berhasil diexport!');
+            } catch (error) {
+                console.error('Error exporting PDF:', error);
+                alert('Terjadi kesalahan saat export PDF');
+            } finally {
+                document.getElementById('loading').classList.remove('show');
+            }
+        }
+        
+        // Export to Image
+        async function exportToImage() {
+            document.getElementById('loading').classList.add('show');
+            
+            try {
+                const calendar = document.querySelector('.container');
+                
+                const canvas = await html2canvas(calendar, {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    backgroundColor: '#ffffff'
+                });
+                
+                canvas.toBlob(blob => {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    const monthNames = [
+                        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+                    ];
+                    a.download = `Cleanup_Calendar_${monthNames[currentMonth]}_${currentYear}.png`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                    alert('Gambar berhasil diexport!');
+                    document.getElementById('loading').classList.remove('show');
+                });
+            } catch (error) {
+                console.error('Error exporting image:', error);
+                alert('Terjadi kesalahan saat export gambar');
+                document.getElementById('loading').classList.remove('show');
+            }
+        }
+        
+        // Export to JSON
+        function exportToJSON() {
+            const dataStr = JSON.stringify(scheduleData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `cleanup_schedule_backup_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            alert('Data berhasil diexport ke JSON!');
+        }
+        
+        // Import from JSON
+        function importFromJSON() {
+            document.getElementById('fileInput').click();
+        }
+        
+        function handleFileImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    
+                    if (confirm('Import data akan mengganti semua data yang ada. Lanjutkan?')) {
+                        scheduleData = importedData;
+                        renderCalendar();
+                        alert('Data berhasil diimport!');
+                    }
+                } catch (error) {
+                    console.error('Error importing JSON:', error);
+                    alert('File JSON tidak valid!');
+                }
+            };
+            reader.readAsText(file);
+            
+            event.target.value = '';
+        }
+        
+        // Google Sheets Integration
+        function openSheetsSettings() {
+            document.getElementById('sheetsModal').style.display = 'block';
+            if (sheetsURL) {
+                document.getElementById('sheetsURL').value = sheetsURL;
+                updateConnectionStatus(true);
+            }
+        }
+        
+        function updateConnectionStatus(connected) {
+            const statusDiv = document.getElementById('connectionStatus');
+            if (connected) {
+                statusDiv.className = 'connection-status connected';
+                statusDiv.textContent = 'Status: Terhubung ✓';
+            } else {
+                statusDiv.className = 'connection-status disconnected';
+                statusDiv.textContent = 'Status: Tidak Terhubung';
+            }
+        }
+        
+        async function saveToSheets() {
+            const url = document.getElementById('sheetsURL').value.trim();
+            
+            if (!url) {
+                alert('Silakan masukkan URL Google Apps Script terlebih dahulu');
+                return;
+            }
+            
+            sheetsURL = url;
+            document.getElementById('loading').classList.add('show');
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'save',
+                        data: scheduleData
+                    })
+                });
+                
+                updateConnectionStatus(true);
+                alert('Data berhasil disimpan ke Google Sheets!');
+            } catch (error) {
+                console.error('Error saving to Sheets:', error);
+                alert('Terjadi kesalahan saat menyimpan ke Google Sheets. Pastikan URL sudah benar dan Apps Script sudah di-deploy.');
+            } finally {
+                document.getElementById('loading').classList.remove('show');
+            }
+        }
+        
+        async function loadFromSheets() {
+            const url = document.getElementById('sheetsURL').value.trim();
+            
+            if (!url) {
+                alert('Silakan masukkan URL Google Apps Script terlebih dahulu');
+                return;
+            }
+            
+            sheetsURL = url;
+            document.getElementById('loading').classList.add('show');
+            
+            try {
+                const response = await fetch(url + '?action=load', {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (data.scheduleData) {
+                        if (confirm('Load data akan mengganti data yang ada. Lanjutkan?')) {
+                            scheduleData = data.scheduleData;
+                            renderCalendar();
+                            updateConnectionStatus(true);
+                            alert('Data berhasil diload dari Google Sheets!');
+                        }
+                    } else {
+                        alert('Tidak ada data ditemukan di Google Sheets');
+                    }
+                } else {
+                    throw new Error('Failed to load data');
+                }
+            } catch (error) {
+                console.error('Error loading from Sheets:', error);
+                alert('Terjadi kesalahan saat load dari Google Sheets. Pastikan URL sudah benar dan Apps Script sudah di-deploy dengan akses yang tepat.');
+            } finally {
+                document.getElementById('loading').classList.remove('show');
+            }
+        }
+        
         function setupEventListeners() {
-            // Month navigation
             document.getElementById('prevMonth').addEventListener('click', () => {
                 currentMonth--;
                 if (currentMonth < 0) {
@@ -1122,7 +1361,6 @@
                 renderCalendar();
             });
             
-            // Month/Year selects
             document.getElementById('monthSelect').addEventListener('change', (e) => {
                 currentMonth = parseInt(e.target.value);
                 renderCalendar();
@@ -1133,7 +1371,6 @@
                 renderCalendar();
             });
             
-            // Today button
             document.getElementById('todayBtn').addEventListener('click', () => {
                 const today = new Date();
                 currentMonth = today.getMonth();
@@ -1143,26 +1380,40 @@
                 renderCalendar();
             });
             
-            // Generate buttons
             document.getElementById('generateMonth').addEventListener('click', generateMonthlySchedule);
             document.getElementById('generateYear').addEventListener('click', generateYearlySchedule);
             
-            // Modal controls
+            document.getElementById('exportPDF').addEventListener('click', exportToPDF);
+            document.getElementById('exportImage').addEventListener('click', exportToImage);
+            document.getElementById('exportJSON').addEventListener('click', exportToJSON);
+            document.getElementById('importJSON').addEventListener('click', importFromJSON);
+            document.getElementById('openSheetsSettings').addEventListener('click', openSheetsSettings);
+            
             document.getElementById('closeModal').addEventListener('click', () => {
                 document.getElementById('taskModal').style.display = 'none';
             });
             
-            document.getElementById('addTaskBtn').addEventListener('click', addTask);
+            document.getElementById('closeSheetsModal').addEventListener('click', () => {
+                document.getElementById('sheetsModal').style.display = 'none';
+            });
             
-            // Close modal on outside click
+            document.getElementById('addTaskBtn').addEventListener('click', addTask);
+            document.getElementById('saveToSheets').addEventListener('click', saveToSheets);
+            document.getElementById('loadFromSheets').addEventListener('click', loadFromSheets);
+            
+            document.getElementById('fileInput').addEventListener('change', handleFileImport);
+            
             window.addEventListener('click', (e) => {
-                const modal = document.getElementById('taskModal');
-                if (e.target === modal) {
-                    modal.style.display = 'none';
+                const taskModal = document.getElementById('taskModal');
+                const sheetsModal = document.getElementById('sheetsModal');
+                if (e.target === taskModal) {
+                    taskModal.style.display = 'none';
+                }
+                if (e.target === sheetsModal) {
+                    sheetsModal.style.display = 'none';
                 }
             });
             
-            // Enter key for adding task
             document.getElementById('newTaskInput').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     addTask();
@@ -1170,7 +1421,6 @@
             });
         }
         
-        // Initialize on load
         document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
