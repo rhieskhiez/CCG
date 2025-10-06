@@ -2,2372 +2,956 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <title>Cleanup Content Calendar</title>
-    
-    <!-- Libraries untuk Export -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aditya & Putri - Undangan Pernikahan</title>
     <style>
-        /* Reset dan Base Styles */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
         }
-        
-        html, body {
-            height: 100%;
-            overflow-x: hidden;
-        }
-        
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            position: relative;
-        }
-        
-        /* Main Container */
-        .app-container {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #FFE5E5 0%, #FFF0F5 50%, #FFE0EC 100%);
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            background: white;
-            max-width: 100%;
-            margin: 0 auto;
+            overflow-x: hidden;
+            perspective: 1500px;
         }
-        
-        /* Header Mobile */
-        .header-mobile {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .header-title {
-            font-size: 18px;
-            font-weight: bold;
-            text-align: center;
-            margin-bottom: 5px;
-        }
-        
-        .header-subtitle {
-            font-size: 12px;
-            text-align: center;
-            opacity: 0.9;
-        }
-        
-        /* Month Navigation */
-        .month-nav {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 15px;
-            background: #f8f9fa;
-            border-bottom: 1px solid #dee2e6;
-            position: relative;
-        }
-        
-        .month-nav-button {
-            width: 40px;
-            height: 40px;
-            border: none;
-            background: #667eea;
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            touch-action: manipulation;
-        }
-        
-        .month-nav-button:active {
-            transform: scale(0.95);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        
-        .month-display {
-            font-size: 16px;
-            font-weight: bold;
-            color: #2d3748;
-            text-align: center;
-            flex: 1;
-        }
-        
-        /* Calendar Container Mobile */
-        .calendar-container {
-            flex: 1;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            padding: 10px;
-            padding-bottom: 100px;
-            touch-action: pan-y;
-            position: relative;
-        }
-        
-        /* Day Headers Container */
-        .day-headers-container {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 2px;
-            margin-bottom: 5px;
-        }
-        
-        .day-header-mobile {
-            background: #667eea;
-            color: white;
-            padding: 8px 2px;
-            text-align: center;
-            font-weight: bold;
-            font-size: 11px;
-            border-radius: 4px;
-        }
-        
-        /* Calendar Grid Mobile */
-        .calendar-grid-mobile {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 2px;
-            touch-action: manipulation;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-        }
-        
-        .day-cell-mobile {
-            aspect-ratio: 1;
-            background: white;
-            border: 1px solid #e9ecef;
-            border-radius: 4px;
-            padding: 2px;
-            position: relative;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            transition: all 0.2s;
-            -webkit-touch-callout: none;
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
-        }
-        
-        .day-cell-mobile.tapped {
-            transform: scale(0.95);
-            box-shadow: 0 2px 5px rgba(102, 126, 234, 0.3);
-        }
-        
-        .day-cell-mobile.other-month {
-            background: #f8f9fa;
-            opacity: 0.4;
-        }
-        
-        .day-cell-mobile.weekend {
-            background: #fff5f5;
-        }
-        
-        .day-cell-mobile.today {
-            border: 2px solid #667eea;
-            background: #f0f4ff;
-        }
-        
-        .day-number-mobile {
-            font-size: 12px;
-            font-weight: bold;
-            color: #2d3748;
-            text-align: center;
-            line-height: 1;
-            margin-bottom: 2px;
-            pointer-events: none;
-        }
-        
-        .day-tasks-mobile {
-            flex: 1;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            gap: 1px;
-            align-items: center;
-            justify-content: center;
-            pointer-events: none;
-        }
-        
-        .task-dots-container {
-            display: flex;
-            gap: 2px;
-            flex-wrap: wrap;
-            justify-content: center;
-            pointer-events: none;
-        }
-        
-        .task-dot {
-            width: 4px;
-            height: 4px;
-            border-radius: 50%;
-            pointer-events: none;
-        }
-        
-        .task-dot.cleanup {
-            background: #48bb78;
-        }
-        
-        .task-dot.editing {
-            background: #ed8936;
-        }
-        
-        .task-dot.mrf {
-            background: #9f7aea;
-        }
-        
-        .task-dot.other {
-            background: #718096;
-        }
-        
-        .task-count {
-            font-size: 9px;
-            color: #667eea;
-            text-align: center;
-            font-weight: bold;
-            margin-top: 2px;
-            pointer-events: none;
-        }
-        
-        /* Bottom Navigation - Floating Style */
-        .bottom-nav {
+
+        /* Loading Screen */
+        .loading-screen {
             position: fixed;
-            bottom: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: white;
-            border-radius: 20px;
+            width: 100%;
+            height: 100vh;
+            background: linear-gradient(135deg, #FFB6C1, #FFC0CB);
+            z-index: 10000;
             display: flex;
-            justify-content: space-around;
-            padding: 8px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05);
-            z-index: 100;
-            width: calc(100% - 30px);
-            max-width: 400px;
-            backdrop-filter: blur(10px);
-            background: rgba(255, 255, 255, 0.95);
-            animation: slideUp 0.5s ease-out;
-        }
-        
-        @keyframes slideUp {
-            from {
-                transform: translateX(-50%) translateY(100px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(-50%) translateY(0);
-                opacity: 1;
-            }
-        }
-        
-        .nav-item {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
-            padding: 10px 5px;
-            cursor: pointer;
-            transition: all 0.3s;
-            border: none;
-            background: none;
-            color: #718096;
-            border-radius: 12px;
-            position: relative;
-            animation: fadeInScale 0.3s ease-out backwards;
-            touch-action: manipulation;
+            animation: fadeOut 3s forwards;
+            animation-delay: 2s;
         }
-        
-        .nav-item:nth-child(1) { animation-delay: 0.1s; }
-        .nav-item:nth-child(2) { animation-delay: 0.15s; }
-        .nav-item:nth-child(3) { animation-delay: 0.2s; }
-        .nav-item:nth-child(4) { animation-delay: 0.25s; }
-        .nav-item:nth-child(5) { animation-delay: 0.3s; }
-        
-        @keyframes fadeInScale {
-            from {
-                transform: scale(0.8);
-                opacity: 0;
-            }
-            to {
-                transform: scale(1);
-                opacity: 1;
-            }
-        }
-        
-        .nav-item:active {
-            transform: scale(0.95);
-        }
-        
-        .nav-item.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+        .loading-heart {
+            font-size: 60px;
+            animation: heartbeat 1s infinite;
             color: white;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
         }
-        
-        .nav-item.active .nav-icon {
-            transform: translateY(-2px);
-        }
-        
-        .nav-icon {
-            font-size: 22px;
-            margin-bottom: 4px;
-            transition: all 0.3s;
-        }
-        
-        .nav-label {
-            font-size: 10px;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        
-        /* Mobile Menu Overlay */
-        .mobile-menu {
+
+        /* Envelope 3D */
+        .envelope-container {
             position: fixed;
-            bottom: -100%;
-            left: 0;
-            right: 0;
-            background: white;
-            border-radius: 20px 20px 0 0;
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
-            transition: bottom 0.3s ease;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             z-index: 1000;
-            max-height: calc(100vh - 120px);
-            overflow-y: auto;
+            background: rgba(255,255,255,0.9);
+            transition: all 1s ease;
         }
-        
-        .mobile-menu.active {
-            bottom: 0;
+
+        .envelope-container.opened {
+            transform: translateY(-100%);
+            opacity: 0;
+            pointer-events: none;
         }
-        
-        /* Menu Header dengan Close Button */
-        .menu-header {
-            position: sticky;
-            top: 0;
+
+        .envelope {
+            width: 350px;
+            height: 250px;
+            position: relative;
+            transform-style: preserve-3d;
+            cursor: pointer;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .envelope-front {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            clip-path: polygon(0 40%, 50% 0, 100% 40%, 100% 100%, 0 100%);
+            z-index: 3;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .envelope-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #FFA500, #FF8C00);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+
+        .envelope-flap {
+            position: absolute;
+            width: 100%;
+            height: 60%;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            clip-path: polygon(0 0, 50% 60%, 100% 0);
+            transform-origin: top;
+            transition: transform 1s ease;
+            z-index: 2;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .envelope:hover .envelope-flap {
+            transform: rotateX(180deg);
+        }
+
+        .envelope-message {
+            position: absolute;
+            width: 90%;
+            height: 80%;
             background: white;
-            z-index: 10;
-            border-bottom: 1px solid #e9ecef;
-            padding-bottom: 15px;
-            border-radius: 20px 20px 0 0;
-        }
-        
-        .menu-handle {
-            width: 40px;
-            height: 4px;
-            background: #cbd5e0;
-            border-radius: 2px;
-            margin: 10px auto;
-            cursor: grab;
-        }
-        
-        .menu-handle:active {
-            cursor: grabbing;
-        }
-        
-        .menu-title-wrapper {
+            top: 10%;
+            left: 5%;
+            padding: 20px;
+            text-align: center;
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
+            justify-content: center;
             align-items: center;
-            padding: 0 20px;
-        }
-        
-        .menu-title {
             font-size: 18px;
-            font-weight: bold;
-            color: #2d3748;
+            color: #8B4513;
+            z-index: 1;
         }
-        
-        .menu-close-btn {
-            width: 36px;
-            height: 36px;
-            border: none;
-            background: #f8f9fa;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 20px;
-            color: #718096;
-            touch-action: manipulation;
-        }
-        
-        .menu-close-btn:hover {
-            background: #e9ecef;
-            color: #2d3748;
-            transform: rotate(90deg);
-        }
-        
-        .menu-close-btn:active {
-            transform: scale(0.95) rotate(90deg);
-        }
-        
-        .mobile-menu.active .menu-close-btn {
-            animation: rotateIn 0.5s ease-out;
-        }
-        
-        @keyframes rotateIn {
-            from {
-                transform: rotate(-90deg);
-                opacity: 0;
-            }
-            to {
-                transform: rotate(0deg);
-                opacity: 1;
-            }
-        }
-        
-        .menu-content {
-            padding: 15px;
-            padding-top: 0;
-        }
-        
-        .menu-section {
-            margin-bottom: 20px;
-        }
-        
-        .menu-section-title {
-            font-size: 12px;
-            color: #718096;
-            text-transform: uppercase;
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-        
-        .menu-button {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            background: #f8f9fa;
-            color: #2d3748;
-            font-size: 14px;
-            font-weight: 500;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.2s;
-            touch-action: manipulation;
-        }
-        
-        .menu-button:active {
-            background: #e9ecef;
-            transform: scale(0.98);
-        }
-        
-        .menu-button.primary {
-            background: #667eea;
+
+        .open-btn {
+            margin-top: 20px;
+            padding: 12px 30px;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
             color: white;
-        }
-        
-        .menu-button.success {
-            background: #48bb78;
-            color: white;
-        }
-        
-        .menu-button.danger {
-            background: #f56565;
-            color: white;
-        }
-        
-        /* Task Modal Mobile */
-        .modal-mobile {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: white;
-            z-index: 2000;
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-            overflow-y: auto;
-        }
-        
-        .modal-mobile.active {
-            transform: translateX(0);
-        }
-        
-        .modal-header-mobile {
-            position: sticky;
-            top: 0;
-            background: white;
-            padding: 15px;
-            border-bottom: 1px solid #e9ecef;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            z-index: 10;
-        }
-        
-        .modal-back {
-            width: 40px;
-            height: 40px;
             border: none;
-            background: #f8f9fa;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            cursor: pointer;
-            touch-action: manipulation;
-        }
-        
-        .modal-title-mobile {
-            flex: 1;
-            text-align: center;
-            font-size: 16px;
-            font-weight: bold;
-            color: #2d3748;
-        }
-        
-        .modal-body-mobile {
-            padding: 15px;
-        }
-        
-        .task-list-mobile {
-            margin-bottom: 20px;
-        }
-        
-        .task-item-mobile {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .task-text {
-            flex: 1;
-            font-size: 14px;
-            color: #2d3748;
-            margin-right: 10px;
-        }
-        
-        .task-category-badge {
-            display: inline-block;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 10px;
-            margin-left: 5px;
-            color: white;
-        }
-        
-        .task-category-badge.cleanup {
-            background: #48bb78;
-        }
-        
-        .task-category-badge.editing {
-            background: #ed8936;
-        }
-        
-        .task-category-badge.mrf {
-            background: #9f7aea;
-        }
-        
-        .task-category-badge.other {
-            background: #718096;
-        }
-        
-        .task-actions-mobile {
-            display: flex;
-            gap: 5px;
-        }
-        
-        .task-action-btn {
-            width: 32px;
-            height: 32px;
-            border: none;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            border-radius: 25px;
             font-size: 16px;
             cursor: pointer;
-            touch-action: manipulation;
+            box-shadow: 0 5px 15px rgba(255,215,0,0.3);
+            transition: all 0.3s ease;
         }
-        
-        .task-action-btn.edit {
-            background: #4299e1;
-            color: white;
+
+        .open-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255,215,0,0.5);
         }
-        
-        .task-action-btn.delete {
-            background: #f56565;
-            color: white;
+
+        /* Main Content */
+        .main-content {
+            opacity: 0;
+            transition: opacity 2s ease;
         }
-        
-        /* Add Task Form Mobile */
-        .add-task-mobile {
-            background: #f0f4ff;
-            border-radius: 12px;
-            padding: 15px;
+
+        .main-content.show {
+            opacity: 1;
         }
-        
-        .form-group {
-            margin-bottom: 12px;
+
+        /* Header Hero 3D */
+        .hero-section {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            transform-style: preserve-3d;
         }
-        
-        .form-label {
-            font-size: 12px;
-            color: #718096;
-            margin-bottom: 5px;
-            display: block;
-            font-weight: 600;
+
+        /* Bunga 3D Animasi */
+        .flower {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            animation: falling 10s linear infinite;
         }
-        
-        .form-input, .form-select {
+
+        .flower-1 {
+            left: 10%;
+            animation-delay: 0s;
+            font-size: 30px;
+        }
+
+        .flower-2 {
+            left: 30%;
+            animation-delay: 2s;
+            font-size: 25px;
+        }
+
+        .flower-3 {
+            left: 50%;
+            animation-delay: 4s;
+            font-size: 35px;
+        }
+
+        .flower-4 {
+            left: 70%;
+            animation-delay: 6s;
+            font-size: 28px;
+        }
+
+        .flower-5 {
+            left: 90%;
+            animation-delay: 8s;
+            font-size: 32px;
+        }
+
+        /* Card Utama 3D */
+        .wedding-card {
+            width: 400px;
+            height: 500px;
+            position: relative;
+            transform-style: preserve-3d;
+            animation: rotate3d 20s infinite linear;
+        }
+
+        .wedding-card:hover {
+            animation-play-state: paused;
+        }
+
+        .card-face {
+            position: absolute;
             width: 100%;
-            padding: 10px;
-            border: 1px solid #cbd5e0;
-            border-radius: 6px;
-            font-size: 14px;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
             background: white;
         }
-        
-        .form-button {
-            width: 100%;
-            padding: 12px;
-            background: #48bb78;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            touch-action: manipulation;
+
+        .card-front {
+            background: linear-gradient(135deg, #FFF, #FFF0F5);
+            border: 3px solid gold;
         }
-        
-        .form-button:active {
-            background: #38a169;
+
+        .card-back {
+            transform: rotateY(180deg);
+            background: linear-gradient(135deg, #FFF0F5, #FFE5E5);
+            border: 3px solid rose;
         }
-        
-        /* Stats Cards Mobile */
-        .stats-container-mobile {
-            padding: 15px;
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-        }
-        
-        .stat-card-mobile {
-            background: white;
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
-            padding: 12px;
+
+        /* Typography */
+        .couple-names {
+            font-size: 48px;
+            color: #D4145A;
             text-align: center;
+            margin: 20px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            animation: glow 2s ease-in-out infinite;
         }
-        
-        .stat-value-mobile {
-            font-size: 20px;
-            font-weight: bold;
-            color: #667eea;
-            margin-bottom: 4px;
+
+        .wedding-date {
+            font-size: 24px;
+            color: #8B4513;
+            margin: 15px 0;
         }
-        
-        .stat-label-mobile {
-            font-size: 11px;
-            color: #718096;
+
+        .ornament {
+            font-size: 40px;
+            color: gold;
+            margin: 10px 0;
+            animation: pulse 2s infinite;
         }
-        
-        /* Loading and Status */
-        .loading-mobile {
-            position: fixed;
+
+        /* Ring Box 3D */
+        .ring-box {
+            width: 100px;
+            height: 80px;
+            position: relative;
+            transform-style: preserve-3d;
+            margin: 30px auto;
+            animation: ringFloat 3s ease-in-out infinite;
+        }
+
+        .ring-box-body {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #8B4513, #654321);
+            border-radius: 10px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .ring-box-lid {
+            position: absolute;
+            width: 100%;
+            height: 40%;
+            background: linear-gradient(135deg, #A0522D, #8B4513);
+            top: -10px;
+            border-radius: 10px 10px 0 0;
+            transform-origin: bottom;
+            animation: openLid 4s ease-in-out infinite;
+        }
+
+        .rings {
+            position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: white;
-            padding: 20px 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            z-index: 3000;
-            display: none;
+            font-size: 30px;
+            animation: sparkle 2s infinite;
+        }
+
+        /* Timeline Section */
+        .timeline-section {
+            padding: 80px 20px;
+            background: rgba(255,255,255,0.9);
+            margin: 50px auto;
+            max-width: 1200px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            transform: rotateX(5deg);
+            transform-style: preserve-3d;
+        }
+
+        .timeline-section h2 {
             text-align: center;
+            font-size: 36px;
+            color: #D4145A;
+            margin-bottom: 50px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
         }
-        
-        .loading-mobile.show {
-            display: block;
-        }
-        
-        .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .loading-text {
-            font-size: 14px;
-            color: #4a5568;
-        }
-        
-        .toast {
-            position: fixed;
-            bottom: 100px;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: #2d3748;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-size: 14px;
-            opacity: 0;
-            transition: all 0.3s;
-            z-index: 3000;
-            max-width: 90%;
-            text-align: center;
-        }
-        
-        .toast.show {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
-        }
-        
-        .toast.success {
-            background: #48bb78;
-        }
-        
-        .toast.error {
-            background: #f56565;
-        }
-        
-        /* Google Config Modal Mobile */
-        .config-modal-mobile {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 2500;
-            display: none;
-            padding: 20px;
-        }
-        
-        .config-modal-mobile.active {
+
+        .timeline-item {
             display: flex;
-            align-items: center;
             justify-content: center;
+            align-items: center;
+            margin: 40px 0;
+            transform-style: preserve-3d;
+            animation: slideIn 1s ease;
         }
-        
-        .config-content-mobile {
+
+        .time-box {
+            width: 200px;
+            height: 150px;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            margin: 0 30px;
+            transform: rotateY(-20deg);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .time-box:hover {
+            transform: rotateY(0deg) scale(1.1);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .time-box h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .time-box p {
+            font-size: 16px;
+        }
+
+        /* Gallery 3D */
+        .gallery-section {
+            padding: 80px 20px;
+            text-align: center;
+        }
+
+        .gallery-section h2 {
+            font-size: 36px;
+            color: #D4145A;
+            margin-bottom: 50px;
+        }
+
+        .gallery-3d {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            transform-style: preserve-3d;
+        }
+
+        .photo-frame {
+            width: 250px;
+            height: 300px;
             background: white;
-            border-radius: 12px;
-            padding: 20px;
-            width: 100%;
-            max-width: 400px;
-            max-height: 90vh;
-            overflow-y: auto;
+            border: 10px solid #D4AF37;
+            border-radius: 10px;
+            position: relative;
+            transform: rotateY(20deg) rotateX(10deg);
+            transition: all 0.5s ease;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            cursor: pointer;
         }
-        
-        .config-title {
+
+        .photo-frame:hover {
+            transform: rotateY(0deg) rotateX(0deg) scale(1.2);
+            z-index: 10;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+
+        .photo-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+
+        .photo-frame::before {
+            content: '❤️';
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            font-size: 40px;
+            animation: heartbeat 1s infinite;
+        }
+
+        /* RSVP Form 3D */
+        .rsvp-section {
+            padding: 80px 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .rsvp-form {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            transform: rotateX(5deg);
+            transition: all 0.3s ease;
+        }
+
+        .rsvp-form:hover {
+            transform: rotateX(0deg) translateY(-10px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+        }
+
+        .rsvp-form h2 {
+            text-align: center;
+            color: #D4145A;
+            margin-bottom: 30px;
+            font-size: 32px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #8B4513;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #FFD700;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #D4145A;
+            transform: translateZ(10px);
+            box-shadow: 0 5px 15px rgba(212,20,90,0.2);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(45deg, #D4145A, #FF69B4);
+            color: white;
+            border: none;
+            border-radius: 25px;
             font-size: 18px;
             font-weight: bold;
-            margin-bottom: 10px;
-            color: #2d3748;
-        }
-        
-        .config-description {
-            font-size: 13px;
-            color: #718096;
-            margin-bottom: 15px;
-            line-height: 1.5;
-        }
-        
-        .config-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        
-        .config-btn {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 500;
             cursor: pointer;
-            touch-action: manipulation;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(212,20,90,0.3);
         }
-        
-        .config-btn.save {
-            background: #48bb78;
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(212,20,90,0.5);
+        }
+
+        /* Music Control */
+        .music-control {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            z-index: 100;
+            animation: musicFloat 3s ease-in-out infinite;
+            transition: all 0.3s ease;
+        }
+
+        .music-control:hover {
+            transform: scale(1.2) rotateZ(180deg);
+        }
+
+        .music-icon {
+            font-size: 30px;
             color: white;
         }
-        
-        .config-btn.cancel {
-            background: #f8f9fa;
-            color: #2d3748;
+
+        /* Confetti */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: gold;
+            animation: confettiFall 5s linear infinite;
         }
-        
-        /* Swipe Indicators */
-        .swipe-hint {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 30px;
-            color: #667eea;
-            opacity: 0;
-            transition: opacity 0.3s;
+
+        /* Hearts floating */
+        .floating-hearts {
+            position: fixed;
+            width: 100%;
+            height: 100%;
             pointer-events: none;
-            z-index: 5;
+            z-index: 1;
         }
-        
-        .swipe-hint.left {
-            left: 10px;
+
+        .heart {
+            position: absolute;
+            color: rgba(255,105,180,0.7);
+            animation: floatUp 10s linear infinite;
+            font-size: 20px;
         }
-        
-        .swipe-hint.right {
-            right: 10px;
-        }
-        
-        .swipe-hint.show {
-            opacity: 0.3;
-        }
-        
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 20px;
-            color: #718096;
-        }
-        
-        .empty-state-icon {
-            font-size: 48px;
-            margin-bottom: 10px;
-            opacity: 0.5;
-        }
-        
-        .empty-state-text {
-            font-size: 14px;
-        }
-        
-        /* Landscape Mode Adjustments */
-        @media screen and (orientation: landscape) and (max-height: 600px) {
-            .header-mobile {
-                padding: 10px;
-            }
-            
-            .header-title {
-                font-size: 16px;
-            }
-            
-            .header-subtitle {
-                display: none;
-            }
-            
-            .month-nav {
-                padding: 8px 15px;
-            }
-            
-            .calendar-container {
-                padding: 5px;
-                padding-bottom: 80px;
-            }
-            
-            .day-cell-mobile {
-                aspect-ratio: 1.3;
-            }
-            
-            .day-number-mobile {
-                font-size: 11px;
-            }
-            
-            .bottom-nav {
-                bottom: 10px;
-                padding: 5px;
-                width: calc(100% - 20px);
-            }
-            
-            .nav-item {
-                padding: 8px 5px;
-            }
-            
-            .nav-icon {
-                font-size: 20px;
-            }
-            
-            .nav-label {
-                font-size: 9px;
-            }
-            
-            .toast {
-                bottom: 80px;
-            }
-            
-            .mobile-menu {
-                max-height: calc(100vh - 90px);
-            }
-            
-            .menu-header {
-                padding-bottom: 10px;
-            }
-            
-            .menu-close-btn {
-                width: 32px;
-                height: 32px;
-                font-size: 18px;
-            }
-            
-            .menu-title {
-                font-size: 16px;
+
+        /* Animations */
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                visibility: hidden;
             }
         }
-        
-        /* Tablet Support */
-        @media screen and (min-width: 768px) {
-            .app-container {
-                max-width: 768px;
-                margin: 0 auto;
-                box-shadow: 0 0 20px rgba(0,0,0,0.1);
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotateX(10deg); }
+            50% { transform: translateY(-20px) rotateX(-10deg); }
+        }
+
+        @keyframes rotate3d {
+            0% { transform: rotateY(0deg); }
+            100% { transform: rotateY(360deg); }
+        }
+
+        @keyframes falling {
+            0% {
+                transform: translateY(-100px) rotateZ(0deg);
+                opacity: 1;
             }
-            
-            .header-mobile {
-                padding: 20px;
-            }
-            
-            .header-title {
-                font-size: 20px;
-            }
-            
-            .calendar-container {
-                padding: 15px;
-                padding-bottom: 110px;
-            }
-            
-            .day-headers-container {
-                gap: 4px;
-            }
-            
-            .calendar-grid-mobile {
-                gap: 4px;
-            }
-            
-            .day-header-mobile {
-                font-size: 12px;
-                padding: 10px 2px;
-            }
-            
-            .day-cell-mobile {
-                padding: 4px;
-            }
-            
-            .day-number-mobile {
-                font-size: 14px;
-            }
-            
-            .task-dot {
-                width: 6px;
-                height: 6px;
-            }
-            
-            .bottom-nav {
-                max-width: 500px;
-                padding: 10px;
-                bottom: 20px;
-            }
-            
-            .nav-item {
-                padding: 12px 8px;
-            }
-            
-            .nav-icon {
-                font-size: 24px;
-            }
-            
-            .nav-label {
-                font-size: 11px;
-            }
-            
-            .stats-container-mobile {
-                grid-template-columns: repeat(4, 1fr);
-            }
-            
-            .menu-close-btn {
-                width: 40px;
-                height: 40px;
-            }
-            
-            .menu-title {
-                font-size: 20px;
-            }
-            
-            .menu-title-wrapper {
-                padding: 0 30px;
+            100% {
+                transform: translateY(calc(100vh + 100px)) rotateZ(360deg);
+                opacity: 0;
             }
         }
-        
-        /* Desktop View */
-        @media screen and (min-width: 1024px) {
-            .app-container {
-                max-width: 1024px;
+
+        @keyframes glow {
+            0%, 100% { text-shadow: 2px 2px 4px rgba(0,0,0,0.1), 0 0 10px rgba(212,20,90,0.3); }
+            50% { text-shadow: 2px 2px 4px rgba(0,0,0,0.1), 0 0 20px rgba(212,20,90,0.6); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @keyframes ringFloat {
+            0%, 100% { transform: translateY(0) rotateY(0deg); }
+            50% { transform: translateY(-10px) rotateY(180deg); }
+        }
+
+        @keyframes openLid {
+            0%, 100% { transform: rotateX(0deg); }
+            50% { transform: rotateX(-45deg); }
+        }
+
+        @keyframes sparkle {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.5); }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
             }
-            
-            .calendar-container {
-                padding: 20px;
-                padding-bottom: 120px;
-            }
-            
-            .day-cell-mobile {
-                padding: 8px;
-            }
-            
-            .day-number-mobile {
-                font-size: 16px;
-                margin-bottom: 5px;
-            }
-            
-            .task-dot {
-                width: 8px;
-                height: 8px;
-            }
-            
-            .task-count {
-                font-size: 11px;
+            to {
+                opacity: 1;
+                transform: translateX(0);
             }
         }
-        
-        /* Hover effect untuk desktop/tablet */
-        @media (hover: hover) {
-            .nav-item:hover {
-                background: rgba(102, 126, 234, 0.1);
-                transform: translateY(-2px);
+
+        @keyframes confettiFall {
+            0% {
+                transform: translateY(-100vh) rotateZ(0deg);
+                opacity: 1;
             }
-            
-            .nav-item.active:hover {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                transform: translateY(-2px);
+            100% {
+                transform: translateY(100vh) rotateZ(720deg);
+                opacity: 0;
             }
         }
-        
-        /* Safe area untuk iPhone dengan notch */
-        @supports (padding-bottom: env(safe-area-inset-bottom)) {
-            .bottom-nav {
-                bottom: calc(15px + env(safe-area-inset-bottom));
-                padding-bottom: calc(8px + env(safe-area-inset-bottom));
+
+        @keyframes floatUp {
+            0% {
+                bottom: -50px;
+                opacity: 0;
             }
-            
-            .calendar-container {
-                padding-bottom: calc(100px + env(safe-area-inset-bottom));
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                bottom: 100vh;
+                opacity: 0;
             }
         }
-        
-        /* Hide scrollbar but keep functionality */
-        .calendar-container::-webkit-scrollbar,
-        .mobile-menu::-webkit-scrollbar {
-            width: 0px;
-            background: transparent;
+
+        @keyframes musicFloat {
+            0%, 100% { transform: translateY(0) rotateZ(0deg); }
+            50% { transform: translateY(-10px) rotateZ(10deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .wedding-card {
+                width: 300px;
+                height: 400px;
+            }
+
+            .couple-names {
+                font-size: 32px;
+            }
+
+            .timeline-item {
+                flex-direction: column;
+            }
+
+            .photo-frame {
+                width: 200px;
+                height: 250px;
+            }
+
+            .envelope {
+                width: 280px;
+                height: 200px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="app-container" id="appContainer">
-        <!-- Header -->
-        <div class="header-mobile">
-            <div class="header-title">📸 Cleanup Calendar</div>
-            <div class="header-subtitle">Sistem Penjadwalan Konten</div>
-        </div>
-        
-        <!-- Month Navigation -->
-        <div class="month-nav">
-            <button class="month-nav-button" id="prevMonthBtn">◀</button>
-            <div class="month-display" id="monthDisplay">Loading...</div>
-            <button class="month-nav-button" id="nextMonthBtn">▶</button>
-        </div>
-        
-        <!-- Calendar Container -->
-        <div class="calendar-container" id="calendarContainer">
-            <!-- Day Headers -->
-            <div class="day-headers-container">
-                <div class="day-header-mobile">Min</div>
-                <div class="day-header-mobile">Sen</div>
-                <div class="day-header-mobile">Sel</div>
-                <div class="day-header-mobile">Rab</div>
-                <div class="day-header-mobile">Kam</div>
-                <div class="day-header-mobile">Jum</div>
-                <div class="day-header-mobile">Sab</div>
-            </div>
-            
-            <!-- Calendar Grid -->
-            <div class="calendar-grid-mobile" id="calendarGrid">
-                <!-- Calendar days will be generated here -->
-            </div>
-            
-            <!-- Swipe Indicators -->
-            <div class="swipe-hint left" id="swipeLeft">◀</div>
-            <div class="swipe-hint right" id="swipeRight">▶</div>
-        </div>
-        
-        <!-- Bottom Navigation - Floating -->
-        <nav class="bottom-nav">
-            <button class="nav-item active" id="navCalendar">
-                <span class="nav-icon">📅</span>
-                <span class="nav-label">Kalender</span>
-            </button>
-            <button class="nav-item" id="navStats">
-                <span class="nav-icon">📊</span>
-                <span class="nav-label">Statistik</span>
-            </button>
-            <button class="nav-item" id="navGenerate">
-                <span class="nav-icon">🔄</span>
-                <span class="nav-label">Generate</span>
-            </button>
-            <button class="nav-item" id="navExport">
-                <span class="nav-icon">💾</span>
-                <span class="nav-label">Export</span>
-            </button>
-            <button class="nav-item" id="navToday">
-                <span class="nav-icon">📍</span>
-                <span class="nav-label">Hari Ini</span>
-            </button>
-        </nav>
+    <!-- Loading Screen -->
+    <div class="loading-screen">
+        <div class="loading-heart">❤️</div>
     </div>
-    
-    <!-- Mobile Menu with Close Button -->
-    <div class="mobile-menu" id="mobileMenu">
-        <div class="menu-header">
-            <div class="menu-handle"></div>
-            <div class="menu-title-wrapper">
-                <div class="menu-title" id="menuTitle">Menu</div>
-                <button class="menu-close-btn" id="menuCloseBtn">
-                    <span>✕</span>
-                </button>
+
+    <!-- Envelope Opening -->
+    <div class="envelope-container" id="envelopeContainer">
+        <div class="envelope">
+            <div class="envelope-back"></div>
+            <div class="envelope-message">
+                <p>Anda diundang ke pernikahan</p>
+                <h2 style="color: #D4145A;">Aditya & Putri</h2>
+                <button class="open-btn" onclick="openInvitation()">Buka Undangan</button>
             </div>
-        </div>
-        <div class="menu-content" id="menuContent">
-            <!-- Dynamic content will be inserted here -->
+            <div class="envelope-flap"></div>
+            <div class="envelope-front"></div>
         </div>
     </div>
-    
-    <!-- Task Modal -->
-    <div class="modal-mobile" id="taskModal">
-        <div class="modal-header-mobile">
-            <button class="modal-back" id="modalBack">←</button>
-            <div class="modal-title-mobile" id="modalTitle">Detail Tugas</div>
-            <div style="width: 40px;"></div>
-        </div>
-        <div class="modal-body-mobile">
-            <div class="task-list-mobile" id="taskList">
-                <!-- Tasks will be listed here -->
+
+    <!-- Floating Hearts Background -->
+    <div class="floating-hearts" id="heartsContainer"></div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <!-- Falling Flowers -->
+        <div class="flower flower-1">🌸</div>
+        <div class="flower flower-2">🌺</div>
+        <div class="flower flower-3">🌷</div>
+        <div class="flower flower-4">🌹</div>
+        <div class="flower flower-5">🏵️</div>
+
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <div class="wedding-card">
+                <div class="card-face card-front">
+                    <div class="ornament">👑</div>
+                    <h1 class="couple-names">Aditya<br>&<br>Putri</h1>
+                    <div class="ornament">💐</div>
+                    <p class="wedding-date">12 Desember 2024</p>
+                    <div class="ring-box">
+                        <div class="ring-box-body">
+                            <div class="rings">💍💍</div>
+                        </div>
+                        <div class="ring-box-lid"></div>
+                    </div>
+                </div>
+                <div class="card-face card-back">
+                    <h2 style="color: #D4145A; margin-bottom: 20px;">Save The Date</h2>
+                    <div style="font-size: 60px; margin: 20px;">💑</div>
+                    <p style="color: #8B4513; font-size: 18px; text-align: center; line-height: 1.6;">
+                        Dengan penuh kebahagiaan<br>
+                        kami mengundang Anda<br>
+                        untuk hadir di hari istimewa kami
+                    </p>
+                    <div style="font-size: 40px; margin-top: 20px;">🎊</div>
+                </div>
             </div>
-            <div class="add-task-mobile">
-                <h3 style="font-size: 16px; margin-bottom: 12px; color: #2d3748;">Tambah Tugas</h3>
+        </div>
+
+        <!-- Timeline Section -->
+        <div class="timeline-section">
+            <h2>📅 Rangkaian Acara</h2>
+            <div class="timeline-item">
+                <div class="time-box">
+                    <h3>⛪ Akad Nikah</h3>
+                    <p>08:00 - 10:00 WIB</p>
+                    <p>Masjid Al-Ikhlas</p>
+                </div>
+                <div style="font-size: 50px;">💒</div>
+                <div class="time-box">
+                    <h3>🎉 Resepsi</h3>
+                    <p>11:00 - 14:00 WIB</p>
+                    <p>Gedung Serbaguna</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gallery Section -->
+        <div class="gallery-section">
+            <h2>📸 Galeri Foto</h2>
+            <div class="gallery-3d">
+                <div class="photo-frame">
+                    <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #FFB6C1, #FFC0CB); display: flex; align-items: center; justify-content: center; font-size: 60px;">
+                        👫
+                    </div>
+                </div>
+                <div class="photo-frame">
+                    <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #FFD700, #FFA500); display: flex; align-items: center; justify-content: center; font-size: 60px;">
+                        💕
+                    </div>
+                </div>
+                <div class="photo-frame">
+                    <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #FFA07A, #FF6347); display: flex; align-items: center; justify-content: center; font-size: 60px;">
+                        💑
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RSVP Section -->
+        <div class="rsvp-section">
+            <form class="rsvp-form">
+                <h2>📝 Konfirmasi Kehadiran</h2>
                 <div class="form-group">
-                    <label class="form-label">Tugas</label>
-                    <input type="text" class="form-input" id="taskInput" placeholder="Masukkan tugas...">
+                    <label>Nama Lengkap</label>
+                    <input type="text" placeholder="Masukkan nama Anda" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Kategori</label>
-                    <select class="form-select" id="taskCategory">
-                        <option value="cleanup">Cleanup</option>
-                        <option value="editing">Editing</option>
-                        <option value="mrf">MRF</option>
-                        <option value="other">Lainnya</option>
+                    <label>Nomor WhatsApp</label>
+                    <input type="tel" placeholder="08xx-xxxx-xxxx" required>
+                </div>
+                <div class="form-group">
+                    <label>Jumlah Tamu</label>
+                    <select required>
+                        <option value="">Pilih jumlah tamu</option>
+                        <option value="1">1 Orang</option>
+                        <option value="2">2 Orang</option>
+                        <option value="3">3 Orang</option>
+                        <option value="4">4 Orang</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Tim (Opsional)</label>
-                    <select class="form-select" id="taskTeam">
-                        <option value="">Pilih Tim</option>
-                        <option value="lele">Tim Lele - Bengkong</option>
-                        <option value="walrus">Tim Walrus - Tanjung Uma</option>
-                        <option value="oyster">Tim Oyster - Setokok</option>
-                        <option value="dugong">Tim Dugong - Moving</option>
-                        <option value="jellyfish">Tim Jellyfish - Moving</option>
+                    <label>Konfirmasi Kehadiran</label>
+                    <select required>
+                        <option value="">Pilih status</option>
+                        <option value="hadir">✅ Hadir</option>
+                        <option value="tidak">❌ Tidak Hadir</option>
+                        <option value="ragu">❓ Belum Pasti</option>
                     </select>
                 </div>
-                <button class="form-button" id="addTaskBtn">Tambah Tugas</button>
-            </div>
+                <div class="form-group">
+                    <label>Ucapan & Doa</label>
+                    <textarea rows="4" placeholder="Tuliskan ucapan dan doa untuk kami..."></textarea>
+                </div>
+                <button type="submit" class="submit-btn">Kirim Konfirmasi</button>
+            </form>
         </div>
     </div>
-    
-    <!-- Google Config Modal -->
-    <div class="config-modal-mobile" id="configModal">
-        <div class="config-content-mobile">
-            <div class="config-title">⚙️ Konfigurasi Google Sheets</div>
-            <div class="config-description">
-                Masukkan URL Web App dari Google Apps Script yang sudah Anda deploy untuk sinkronisasi data.
-            </div>
-            <div class="form-group">
-                <label class="form-label">Web App URL</label>
-                <input type="text" class="form-input" id="googleUrl" 
-                       placeholder="https://script.google.com/macros/s/.../exec">
-            </div>
-            <div class="config-buttons">
-                <button class="config-btn save" id="saveConfigBtn">Simpan</button>
-                <button class="config-btn cancel" id="cancelConfigBtn">Batal</button>
-            </div>
-        </div>
+
+    <!-- Music Control -->
+    <div class="music-control" onclick="toggleMusic()">
+        <span class="music-icon" id="musicIcon">🎵</span>
     </div>
-    
-    <!-- Loading -->
-    <div class="loading-mobile" id="loading">
-        <div class="loading-spinner"></div>
-        <div class="loading-text">Processing...</div>
-    </div>
-    
-    <!-- Toast Notification -->
-    <div class="toast" id="toast"></div>
-    
+
     <script>
-        // Global Variables
-        let scheduleData = {};
-        let currentMonth = new Date().getMonth();
-        let currentYear = new Date().getFullYear();
-        let selectedDate = null;
-        let googleWebAppUrl = 'https://script.google.com/macros/s/AKfycbyShSkVm3S9PjF0D8dM63wNPNqWO58-4qroYerAlARZTIQ69pAe1gDykb4EZ3LbSzVsWQ/exec';
-        
-        // Swipe detection variables
-        let touchStartX = 0;
-        let touchStartY = 0;
-        let touchEndX = 0;
-        let touchEndY = 0;
-        let touchStartTime = 0;
-        let isSwiping = false;
-        let swipeThreshold = 100;
-        let tapThreshold = 10;
-        let timeThreshold = 300;
-        
-        // Teams Configuration
-        const teams = {
-            lele: { name: "Tim Lele", location: "Bengkong" },
-            walrus: { name: "Tim Walrus", location: "Tanjung Uma" },
-            oyster: { name: "Tim Oyster", location: "Setokok" },
-            dugong: { name: "Tim Dugong", location: "Moving" },
-            jellyfish: { name: "Tim Jellyfish", location: "Moving" }
-        };
-        
-        // Weekly Template
-        const weeklyTemplate = {
-            1: {
-                tasks: [
-                    "2-3 times cleanup shooting",
-                    "Cleanup footage",
-                    "MRF footage",
-                    "Thematic timelapse",
-                    "Select 10 best raw photos & videos",
-                    "Provide landscape & portrait version",
-                    "Edit plastic adventure of the month"
-                ]
-            },
-            2: {
-                tasks: [
-                    "2-3 times cleanup shooting",
-                    "Cleanup footage with moving crew",
-                    "Thematic timelapse",
-                    "MRF footage",
-                    "Provide landscape & portrait version",
-                    "Select 10 best raw photos & videos",
-                    "Edit 2-3 requested simple videos"
-                ]
-            },
-            3: {
-                tasks: [
-                    "2-3 times cleanup shooting",
-                    "Cleanup footage",
-                    "MRF footage",
-                    "Thematic timelapse",
-                    "Crew highlight",
-                    "Select 10 best raw photos & videos",
-                    "Provide landscape & portrait version",
-                    "Edit 2-3 requested simple videos"
-                ]
-            },
-            4: {
-                tasks: [
-                    "2-3 times cleanup shooting",
-                    "Cleanup footage with moving crew",
-                    "MRF footage",
-                    "Thematic timelapse",
-                    "Select 10 best raw photos & videos",
-                    "Provide landscape & portrait version",
-                    "Edit 2-3 requested simple videos"
-                ]
-            }
-        };
-        
-        // Initialize App
-        function init() {
-            loadStoredData();
-            loadGoogleConfig();
-            renderCalendar();
-            setupEventListeners();
-            setupSwipeGestures();
-            updateMonthDisplay();
-        }
-        
-        // Load stored data
-        function loadStoredData() {
-            const stored = localStorage.getItem('scheduleData');
-            if (stored) {
-                scheduleData = JSON.parse(stored);
-            }
-        }
-        
-        // Save data
-        function saveData() {
-            localStorage.setItem('scheduleData', JSON.stringify(scheduleData));
-            showToast('Data tersimpan', 'success');
-        }
-        
-        // Load Google config
-        function loadGoogleConfig() {
-            const url = localStorage.getItem('googleWebAppUrl');
-            if (url) {
-                googleWebAppUrl = url;
-                document.getElementById('googleUrl').value = url;
-            }
-        }
-        
-        // Save Google config
-        function saveGoogleConfig() {
-            const url = document.getElementById('googleUrl').value.trim();
-            if (url) {
-                googleWebAppUrl = url;
-                localStorage.setItem('googleWebAppUrl', url);
-                showToast('Konfigurasi tersimpan', 'success');
-            }
-        }
-        
-        // Generate date key
-        function getDateKey(year, month, day) {
-            return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        }
-        
-        // Update month display
-        function updateMonthDisplay() {
-            const monthNames = [
-                'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-                'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-            ];
-            document.getElementById('monthDisplay').textContent = 
-                `${monthNames[currentMonth]} ${currentYear}`;
-        }
-        
-        // Render calendar
-        function renderCalendar() {
-            const grid = document.getElementById('calendarGrid');
-            grid.innerHTML = '';
+        let musicPlaying = false;
+        let confettiInterval;
+
+        // Open Invitation
+        function openInvitation() {
+            const envelope = document.getElementById('envelopeContainer');
+            const mainContent = document.getElementById('mainContent');
             
-            // Calculate days
-            const firstDay = new Date(currentYear, currentMonth, 1);
-            const lastDay = new Date(currentYear, currentMonth + 1, 0);
-            const prevLastDay = new Date(currentYear, currentMonth, 0);
-            
-            const startDay = firstDay.getDay();
-            const daysInMonth = lastDay.getDate();
-            const daysInPrevMonth = prevLastDay.getDate();
-            
-            // Previous month days
-            for (let i = startDay - 1; i >= 0; i--) {
-                const dayCell = createDayCell(
-                    daysInPrevMonth - i,
-                    currentMonth - 1,
-                    currentYear,
-                    true
-                );
-                grid.appendChild(dayCell);
-            }
-            
-            // Current month days
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dayCell = createDayCell(day, currentMonth, currentYear, false);
-                grid.appendChild(dayCell);
-            }
-            
-            // Next month days
-            const totalCells = grid.children.length;
-            const remainingCells = 35 - totalCells;
-            for (let day = 1; day <= remainingCells; day++) {
-                const dayCell = createDayCell(
-                    day,
-                    currentMonth + 1,
-                    currentYear,
-                    true
-                );
-                grid.appendChild(dayCell);
-            }
-            
-            updateMonthDisplay();
-        }
-        
-        // Create day cell with fixed touch handling
-        function createDayCell(day, month, year, isOtherMonth) {
-            const cell = document.createElement('div');
-            cell.className = 'day-cell-mobile';
-            
-            if (isOtherMonth) {
-                cell.classList.add('other-month');
-            }
-            
-            const actualMonth = month < 0 ? 11 : month > 11 ? 0 : month;
-            const actualYear = month < 0 ? year - 1 : month > 11 ? year + 1 : year;
-            const dayOfWeek = new Date(actualYear, actualMonth, day).getDay();
-            
-            // Mark weekends
-            if (dayOfWeek === 0 || dayOfWeek === 6) {
-                cell.classList.add('weekend');
-            }
-            
-            // Mark today
-            const today = new Date();
-            if (
-                day === today.getDate() &&
-                actualMonth === today.getMonth() &&
-                actualYear === today.getFullYear()
-            ) {
-                cell.classList.add('today');
-            }
-            
-            // Day number
-            const dayNumber = document.createElement('div');
-            dayNumber.className = 'day-number-mobile';
-            dayNumber.textContent = day;
-            cell.appendChild(dayNumber);
-            
-            // Tasks display
-            const tasksContainer = document.createElement('div');
-            tasksContainer.className = 'day-tasks-mobile';
-            
-            const dateKey = getDateKey(actualYear, actualMonth, day);
-            if (scheduleData[dateKey] && scheduleData[dateKey].length > 0) {
-                const tasks = scheduleData[dateKey];
-                
-                // Create dots container
-                const dotsContainer = document.createElement('div');
-                dotsContainer.className = 'task-dots-container';
-                
-                // Show dots for categories (max 3)
-                const categories = [...new Set(tasks.map(t => t.category))];
-                categories.slice(0, 3).forEach(cat => {
-                    const dot = document.createElement('div');
-                    dot.className = `task-dot ${cat}`;
-                    dotsContainer.appendChild(dot);
-                });
-                
-                tasksContainer.appendChild(dotsContainer);
-                
-                // Show task count if more than 3
-                if (tasks.length > 3) {
-                    const count = document.createElement('div');
-                    count.className = 'task-count';
-                    count.textContent = `+${tasks.length - 3}`;
-                    tasksContainer.appendChild(count);
-                }
-            }
-            
-            cell.appendChild(tasksContainer);
-            
-            // Store cell data for click handler
-            cell.dataset.year = actualYear;
-            cell.dataset.month = actualMonth;
-            cell.dataset.day = day;
-            cell.dataset.isOtherMonth = isOtherMonth;
-            
-            // Add tap handler untuk mobile dan click untuk desktop
-            if ('ontouchstart' in window) {
-                // Mobile touch handling
-                cell.addEventListener('touchend', handleCellTap);
-            } else {
-                // Desktop click handling
-                cell.addEventListener('click', function() {
-                    if (!isOtherMonth) {
-                        openTaskModal(actualYear, actualMonth, day);
-                    }
-                });
-            }
-            
-            return cell;
-        }
-        
-        // Handle cell tap (mobile)
-        function handleCellTap(e) {
-            const cell = e.currentTarget;
-            const isOtherMonth = cell.dataset.isOtherMonth === 'true';
-            
-            if (!isOtherMonth && !isSwiping) {
-                const year = parseInt(cell.dataset.year);
-                const month = parseInt(cell.dataset.month);
-                const day = parseInt(cell.dataset.day);
-                
-                // Add visual feedback
-                cell.classList.add('tapped');
-                setTimeout(() => {
-                    cell.classList.remove('tapped');
-                }, 200);
-                
-                openTaskModal(year, month, day);
-            }
-        }
-        
-        // Setup swipe gestures - FIXED VERSION
-        function setupSwipeGestures() {
-            const container = document.getElementById('calendarContainer');
-            
-            // Calendar swipe handling
-            container.addEventListener('touchstart', (e) => {
-                // Don't interfere if touching a day cell
-                if (e.target.closest('.day-cell-mobile')) {
-                    return;
-                }
-                
-                touchStartX = e.changedTouches[0].screenX;
-                touchStartY = e.changedTouches[0].screenY;
-                touchStartTime = Date.now();
-                isSwiping = false;
-            }, { passive: true });
-            
-            container.addEventListener('touchmove', (e) => {
-                // Don't process if touching a day cell
-                if (e.target.closest('.day-cell-mobile')) {
-                    return;
-                }
-                
-                touchEndX = e.changedTouches[0].screenX;
-                touchEndY = e.changedTouches[0].screenY;
-                
-                const diffX = Math.abs(touchStartX - touchEndX);
-                const diffY = Math.abs(touchStartY - touchEndY);
-                
-                // Only consider horizontal swipes
-                if (diffX > 30 && diffX > diffY) {
-                    isSwiping = true;
-                    
-                    // Show swipe indicators
-                    if (diffX > 50) {
-                        if (touchStartX - touchEndX > 0) {
-                            document.getElementById('swipeRight').classList.add('show');
-                            document.getElementById('swipeLeft').classList.remove('show');
-                        } else {
-                            document.getElementById('swipeLeft').classList.add('show');
-                            document.getElementById('swipeRight').classList.remove('show');
-                        }
-                    }
-                }
-            }, { passive: true });
-            
-            container.addEventListener('touchend', (e) => {
-                // Hide swipe indicators
-                document.getElementById('swipeLeft').classList.remove('show');
-                document.getElementById('swipeRight').classList.remove('show');
-                
-                // Don't process if touching a day cell
-                if (e.target.closest('.day-cell-mobile')) {
-                    isSwiping = false;
-                    return;
-                }
-                
-                const touchEndTime = Date.now();
-                const timeDiff = touchEndTime - touchStartTime;
-                
-                if (isSwiping && timeDiff < 1000) {
-                    const diffX = touchStartX - touchEndX;
-                    const diffY = Math.abs(touchStartY - touchEndY);
-                    
-                    // Only trigger if horizontal swipe is dominant
-                    if (Math.abs(diffX) > swipeThreshold && Math.abs(diffX) > diffY) {
-                        if (diffX > 0) {
-                            navigateNextMonth();
-                        } else {
-                            navigatePrevMonth();
-                        }
-                    }
-                }
-                
-                isSwiping = false;
-            }, { passive: true });
-            
-            // Menu swipe to close
-            const menuHandle = document.querySelector('.menu-handle');
-            let menuStartY = 0;
-            
-            if (menuHandle) {
-                menuHandle.addEventListener('touchstart', (e) => {
-                    menuStartY = e.touches[0].clientY;
-                }, { passive: true });
-                
-                menuHandle.addEventListener('touchmove', (e) => {
-                    const touchY = e.touches[0].clientY;
-                    const diff = touchY - menuStartY;
-                    
-                    if (diff > 0) {
-                        const menu = document.getElementById('mobileMenu');
-                        menu.style.transform = `translateY(${diff}px)`;
-                    }
-                }, { passive: true });
-                
-                menuHandle.addEventListener('touchend', (e) => {
-                    const touchY = e.changedTouches[0].clientY;
-                    const diff = touchY - menuStartY;
-                    const menu = document.getElementById('mobileMenu');
-                    
-                    if (diff > 100) {
-                        closeMenu();
-                    } else {
-                        menu.style.transform = 'translateY(0)';
-                    }
-                    
-                    menuStartY = 0;
-                }, { passive: true });
-            }
-        }
-        
-        // Open task modal
-        function openTaskModal(year, month, day) {
-            selectedDate = { year, month, day };
-            const modal = document.getElementById('taskModal');
-            const dateKey = getDateKey(year, month, day);
-            const dayOfWeek = new Date(year, month, day).getDay();
-            const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-            
-            document.getElementById('modalTitle').textContent = 
-                `${dayNames[dayOfWeek]}, ${day}/${month + 1}/${year}`;
-            
-            // Display tasks
-            const taskList = document.getElementById('taskList');
-            taskList.innerHTML = '';
-            
-            if (scheduleData[dateKey] && scheduleData[dateKey].length > 0) {
-                scheduleData[dateKey].forEach((task, index) => {
-                    const taskItem = document.createElement('div');
-                    taskItem.className = 'task-item-mobile';
-                    
-                    const taskTextContainer = document.createElement('div');
-                    taskTextContainer.className = 'task-text';
-                    
-                    const taskText = document.createElement('span');
-                    taskText.textContent = task.text;
-                    taskTextContainer.appendChild(taskText);
-                    
-                    if (task.category) {
-                        const badge = document.createElement('span');
-                        badge.className = `task-category-badge ${task.category}`;
-                        badge.textContent = task.category.toUpperCase();
-                        taskTextContainer.appendChild(badge);
-                    }
-                    
-                    if (task.team) {
-                        const teamText = document.createElement('div');
-                        teamText.style.fontSize = '11px';
-                        teamText.style.color = '#718096';
-                        teamText.style.marginTop = '2px';
-                        teamText.textContent = teams[task.team].name;
-                        taskTextContainer.appendChild(teamText);
-                    }
-                    
-                    const actions = document.createElement('div');
-                    actions.className = 'task-actions-mobile';
-                    
-                    const editBtn = document.createElement('button');
-                    editBtn.className = 'task-action-btn edit';
-                    editBtn.innerHTML = '✏️';
-                    editBtn.onclick = () => editTask(dateKey, index);
-                    
-                    const deleteBtn = document.createElement('button');
-                    deleteBtn.className = 'task-action-btn delete';
-                    deleteBtn.innerHTML = '🗑️';
-                    deleteBtn.onclick = () => deleteTask(dateKey, index);
-                    
-                    actions.appendChild(editBtn);
-                    actions.appendChild(deleteBtn);
-                    
-                    taskItem.appendChild(taskTextContainer);
-                    taskItem.appendChild(actions);
-                    taskList.appendChild(taskItem);
-                });
-            } else {
-                const emptyState = document.createElement('div');
-                emptyState.className = 'empty-state';
-                emptyState.innerHTML = `
-                    <div class="empty-state-icon">📝</div>
-                    <div class="empty-state-text">Belum ada tugas untuk hari ini</div>
-                `;
-                taskList.appendChild(emptyState);
-            }
-            
-            modal.classList.add('active');
-        }
-        
-        // Rest of the functions remain the same...
-        // (addTask, editTask, deleteTask, showStats, showGenerateMenu, showExportMenu, etc.)
-        
-        // Add task
-        function addTask() {
-            const input = document.getElementById('taskInput');
-            const category = document.getElementById('taskCategory').value;
-            const team = document.getElementById('taskTeam').value;
-            
-            if (!input.value.trim()) {
-                showToast('Masukkan tugas terlebih dahulu', 'error');
-                return;
-            }
-            
-            if (!selectedDate) return;
-            
-            const dateKey = getDateKey(selectedDate.year, selectedDate.month, selectedDate.day);
-            
-            if (!scheduleData[dateKey]) {
-                scheduleData[dateKey] = [];
-            }
-            
-            const taskData = {
-                text: input.value.trim(),
-                category: category
-            };
-            
-            if (team) {
-                taskData.team = team;
-            }
-            
-            scheduleData[dateKey].push(taskData);
-            saveData();
-            
-            input.value = '';
-            document.getElementById('taskTeam').value = '';
-            
-            openTaskModal(selectedDate.year, selectedDate.month, selectedDate.day);
-            renderCalendar();
-        }
-        
-        // Edit task
-        function editTask(dateKey, index) {
-            const task = scheduleData[dateKey][index];
-            const newText = prompt('Edit tugas:', task.text);
-            
-            if (newText !== null && newText.trim()) {
-                scheduleData[dateKey][index].text = newText.trim();
-                saveData();
-                openTaskModal(selectedDate.year, selectedDate.month, selectedDate.day);
-                renderCalendar();
-            }
-        }
-        
-        // Delete task
-        function deleteTask(dateKey, index) {
-            if (confirm('Hapus tugas ini?')) {
-                scheduleData[dateKey].splice(index, 1);
-                
-                if (scheduleData[dateKey].length === 0) {
-                    delete scheduleData[dateKey];
-                }
-                
-                saveData();
-                openTaskModal(selectedDate.year, selectedDate.month, selectedDate.day);
-                renderCalendar();
-            }
-        }
-        
-        // Show statistics
-        function showStats() {
-            const menuContent = document.getElementById('menuContent');
-            menuContent.innerHTML = '';
-            
-            const year = currentYear;
-            const month = currentMonth;
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            
-            let totalTasks = 0;
-            let cleanupCount = 0;
-            let editingCount = 0;
-            let mrfCount = 0;
-            
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dateKey = getDateKey(year, month, day);
-                if (scheduleData[dateKey]) {
-                    totalTasks += scheduleData[dateKey].length;
-                    
-                    scheduleData[dateKey].forEach(task => {
-                        if (task.category === 'cleanup') cleanupCount++;
-                        if (task.category === 'editing') editingCount++;
-                        if (task.category === 'mrf') mrfCount++;
-                    });
-                }
-            }
-            
-            const today = new Date();
-            let weekProgress = 0;
-            if (today.getMonth() === month && today.getFullYear() === year) {
-                weekProgress = Math.ceil((today.getDate() + new Date(year, month, 1).getDay()) / 7);
-            }
-            
-            const statsHTML = `
-                <div class="stats-container-mobile">
-                    <div class="stat-card-mobile">
-                        <div class="stat-value-mobile">${totalTasks}</div>
-                        <div class="stat-label-mobile">Total Tugas</div>
-                    </div>
-                    <div class="stat-card-mobile">
-                        <div class="stat-value-mobile">${cleanupCount}</div>
-                        <div class="stat-label-mobile">Cleanup</div>
-                    </div>
-                    <div class="stat-card-mobile">
-                        <div class="stat-value-mobile">${editingCount}</div>
-                        <div class="stat-label-mobile">Editing</div>
-                    </div>
-                    <div class="stat-card-mobile">
-                        <div class="stat-value-mobile">${weekProgress}/4</div>
-                        <div class="stat-label-mobile">Minggu</div>
-                    </div>
-                </div>
-            `;
-            
-            menuContent.innerHTML = statsHTML;
-            
-            document.getElementById('menuTitle').textContent = 'Statistik';
-            document.getElementById('mobileMenu').classList.add('active');
-        }
-        
-        // Show generate menu
-        function showGenerateMenu() {
-            const menuContent = document.getElementById('menuContent');
-            
-            const generateHTML = `
-                <div class="menu-section">
-                    <div class="menu-section-title">Generate Jadwal</div>
-                    <button class="menu-button primary" onclick="generateMonthly()">
-                        📅 Generate Bulanan
-                    </button>
-                    <button class="menu-button primary" onclick="generateYearly()">
-                        📆 Generate Tahunan
-                    </button>
-                </div>
-            `;
-            
-            menuContent.innerHTML = generateHTML;
-            document.getElementById('menuTitle').textContent = 'Generate Jadwal';
-            document.getElementById('mobileMenu').classList.add('active');
-        }
-        
-        // Show export menu
-        function showExportMenu() {
-            const menuContent = document.getElementById('menuContent');
-            
-            const exportHTML = `
-                <div class="menu-section">
-                    <div class="menu-section-title">Simpan & Export</div>
-                    <button class="menu-button success" onclick="saveDataLocal()">
-                        💾 Simpan Lokal
-                    </button>
-                    <button class="menu-button" onclick="exportPDF()">
-                        📄 Export PDF
-                    </button>
-                    <button class="menu-button" onclick="exportImage()">
-                        🖼️ Export Gambar
-                    </button>
-                </div>
-                <div class="menu-section">
-                    <div class="menu-section-title">Sinkronisasi Cloud</div>
-                    <button class="menu-button primary" onclick="syncToGoogle()">
-                        ☁️ Sync ke Google Sheets
-                    </button>
-                    <button class="menu-button success" onclick="loadFromGoogle()">
-                        📥 Load dari Google Sheets
-                    </button>
-                    <button class="menu-button" onclick="showConfigModal()">
-                        ⚙️ Konfigurasi Google
-                    </button>
-                </div>
-            `;
-            
-            menuContent.innerHTML = exportHTML;
-            document.getElementById('menuTitle').textContent = 'Export & Sync';
-            document.getElementById('mobileMenu').classList.add('active');
-        }
-        
-        // Generate monthly schedule
-        function generateMonthly() {
-            if (!confirm('Generate jadwal bulanan akan mengganti jadwal yang ada. Lanjutkan?')) {
-                return;
-            }
-            
-            closeMenu();
-            showLoading('Generating jadwal bulanan...');
-            
-            const year = currentYear;
-            const month = currentMonth;
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            
-            // Clear existing
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dateKey = getDateKey(year, month, day);
-                delete scheduleData[dateKey];
-            }
-            
-            // Generate new schedule
-            const teamRotation = ['lele', 'walrus', 'oyster', 'dugong', 'jellyfish'];
-            let teamIndex = 0;
-            
-            for (let day = 1; day <= daysInMonth; day++) {
-                const date = new Date(year, month, day);
-                const dayOfWeek = date.getDay();
-                const weekOfMonth = Math.ceil((day + new Date(year, month, 1).getDay()) / 7);
-                const dateKey = getDateKey(year, month, day);
-                
-                if (dayOfWeek === 0 || dayOfWeek === 6) continue;
-                
-                scheduleData[dateKey] = [];
-                
-                if (dayOfWeek === 5) {
-                    // Friday editing
-                    scheduleData[dateKey].push(
-                        { text: "Editing Day - Edit requested videos", category: "editing" },
-                        { text: "Select & organize weekly best shots", category: "editing" },
-                        { text: "Prepare landscape & portrait versions", category: "editing" }
-                    );
-                    
-                    if (weekOfMonth === 1) {
-                        scheduleData[dateKey].push({
-                            text: "Edit plastic adventure of the month",
-                            category: "editing"
-                        });
-                    }
-                } else if (dayOfWeek === 1 || dayOfWeek === 3) {
-                    // Monday/Wednesday
-                    const assignedTeam = teamRotation[teamIndex % teamRotation.length];
-                    teamIndex++;
-                    
-                    scheduleData[dateKey].push({
-                        text: `Cleanup shooting - ${teams[assignedTeam].name} @ ${teams[assignedTeam].location}`,
-                        category: "cleanup",
-                        team: assignedTeam
-                    });
-                } else if (dayOfWeek === 2 || dayOfWeek === 4) {
-                    // Tuesday/Thursday
-                    scheduleData[dateKey].push(
-                        { text: "MRF footage & documentation", category: "mrf" },
-                        { text: "Thematic timelapse shooting", category: "cleanup" }
-                    );
-                    
-                    scheduleData[dateKey].push({
-                        text: "Bengkong river barrier check",
-                        category: "cleanup"
-                    });
-                }
-                
-                if (weekOfMonth === 3 && dayOfWeek === 3) {
-                    scheduleData[dateKey].push({
-                        text: "Crew highlight interview/profile",
-                        category: "other"
-                    });
-                }
-                
-                if ((weekOfMonth === 2 || weekOfMonth === 4) && dayOfWeek === 2) {
-                    scheduleData[dateKey].push({
-                        text: "Cleanup footage with moving crew",
-                        category: "cleanup",
-                        team: "dugong"
-                    });
-                }
-            }
-            
-            saveData();
-            renderCalendar();
-            
+            envelope.classList.add('opened');
             setTimeout(() => {
-                hideLoading();
-                showToast('Jadwal bulanan berhasil di-generate!', 'success');
-            }, 500);
-        }
-        
-        // Generate yearly schedule
-        function generateYearly() {
-            if (!confirm('Generate jadwal tahunan akan mengganti SEMUA jadwal tahun ini. Lanjutkan?')) {
-                return;
-            }
-            
-            closeMenu();
-            showLoading('Generating jadwal tahunan...');
-            
-            const savedMonth = currentMonth;
-            
-            for (let month = 0; month < 12; month++) {
-                const year = currentYear;
-                const daysInMonth = new Date(year, month + 1, 0).getDate();
-                const teamRotation = ['lele', 'walrus', 'oyster', 'dugong', 'jellyfish'];
-                let teamIndex = month * 8;
-                
-                for (let day = 1; day <= daysInMonth; day++) {
-                    const date = new Date(year, month, day);
-                    const dayOfWeek = date.getDay();
-                    const weekOfMonth = Math.ceil((day + new Date(year, month, 1).getDay()) / 7);
-                    const dateKey = getDateKey(year, month, day);
-                    
-                    if (dayOfWeek === 0 || dayOfWeek === 6) continue;
-                    
-                    scheduleData[dateKey] = [];
-                    
-                    if (dayOfWeek === 5) {
-                        scheduleData[dateKey].push(
-                            { text: "Editing Day", category: "editing" },
-                            { text: "Select & organize shots", category: "editing" }
-                        );
-                        
-                        if (weekOfMonth === 1) {
-                            scheduleData[dateKey].push({
-                                text: "Monthly video edit",
-                                category: "editing"
-                            });
-                        }
-                    } else if (dayOfWeek === 1 || dayOfWeek === 3) {
-                        const assignedTeam = teamRotation[teamIndex % teamRotation.length];
-                        teamIndex++;
-                        
-                        scheduleData[dateKey].push({
-                            text: `Cleanup - ${teams[assignedTeam].name}`,
-                            category: "cleanup",
-                            team: assignedTeam
-                        });
-                    } else if (dayOfWeek === 2 || dayOfWeek === 4) {
-                        scheduleData[dateKey].push(
-                            { text: "MRF documentation", category: "mrf" },
-                            { text: "Timelapse shooting", category: "cleanup" }
-                        );
-                    }
-                }
-            }
-            
-            currentMonth = savedMonth;
-            saveData();
-            renderCalendar();
-            
-            setTimeout(() => {
-                hideLoading();
-                showToast('Jadwal tahunan berhasil di-generate!', 'success');
+                mainContent.classList.add('show');
+                startConfetti();
+                generateHearts();
             }, 1000);
         }
-        
-        // Export functions
-        async function exportPDF() {
-            closeMenu();
-            showLoading('Generating PDF...');
+
+        // Toggle Music
+        function toggleMusic() {
+            const icon = document.getElementById('musicIcon');
+            musicPlaying = !musicPlaying;
             
-            try {
-                const element = document.querySelector('.app-container');
-                const canvas = await html2canvas(element, {
-                    scale: 2,
-                    logging: false
-                });
-                
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF({
-                    orientation: 'portrait',
-                    unit: 'mm',
-                    format: 'a4'
-                });
-                
-                const imgWidth = 210;
-                const imgHeight = (canvas.height * imgWidth) / canvas.width;
-                
-                pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, imgWidth, imgHeight);
-                
-                const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
-                                  'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-                pdf.save(`Calendar_${monthNames[currentMonth]}_${currentYear}.pdf`);
-                
-                hideLoading();
-                showToast('PDF berhasil di-export!', 'success');
-            } catch (error) {
-                hideLoading();
-                showToast('Gagal export PDF', 'error');
-                console.error(error);
+            if (musicPlaying) {
+                icon.textContent = '🔇';
+                console.log('Music playing...');
+                // Add actual audio element here
+            } else {
+                icon.textContent = '🎵';
+                console.log('Music paused');
             }
         }
-        
-        async function exportImage() {
-            closeMenu();
-            showLoading('Generating image...');
+
+        // Generate Confetti
+        function startConfetti() {
+            const colors = ['gold', 'pink', 'red', 'yellow', 'orange'];
             
-            try {
-                const element = document.querySelector('.app-container');
-                const canvas = await html2canvas(element, {
-                    scale: 2,
-                    logging: false
-                });
+            confettiInterval = setInterval(() => {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDuration = (3 + Math.random() * 2) + 's';
+                confetti.style.animationDelay = Math.random() * 2 + 's';
+                document.body.appendChild(confetti);
                 
-                canvas.toBlob(function(blob) {
-                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
-                                      'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-                    saveAs(blob, `Calendar_${monthNames[currentMonth]}_${currentYear}.png`);
-                    hideLoading();
-                    showToast('Gambar berhasil di-export!', 'success');
-                });
-            } catch (error) {
-                hideLoading();
-                showToast('Gagal export gambar', 'error');
-                console.error(error);
-            }
-        }
-        
-        async function syncToGoogle() {
-            if (!googleWebAppUrl) {
-                showConfigModal();
-                return;
-            }
-            
-            closeMenu();
-            showLoading('Syncing to Google Sheets...');
-            
-            try {
-                await fetch(googleWebAppUrl, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        action: 'save',
-                        data: scheduleData,
-                        timestamp: new Date().toISOString()
-                    })
-                });
-                
-                hideLoading();
-                showToast('Data berhasil disync!', 'success');
-            } catch (error) {
-                hideLoading();
-                showToast('Gagal sync ke Google', 'error');
-                console.error(error);
-            }
-        }
-        
-        async function loadFromGoogle() {
-            if (!googleWebAppUrl) {
-                showConfigModal();
-                return;
-            }
-            
-            closeMenu();
-            showLoading('Loading from Google Sheets...');
-            
-            try {
-                const response = await fetch(`${googleWebAppUrl}?action=load`);
-                const data = await response.json();
-                
-                if (data && data.data) {
-                    scheduleData = data.data;
-                    saveData();
-                    renderCalendar();
-                    hideLoading();
-                    showToast('Data berhasil dimuat!', 'success');
-                } else {
-                    hideLoading();
-                    showToast('Tidak ada data', 'error');
-                }
-            } catch (error) {
-                hideLoading();
-                showToast('Gagal memuat data', 'error');
-                console.error(error);
-            }
-        }
-        
-        function saveDataLocal() {
-            closeMenu();
-            saveData();
-        }
-        
-        // UI Helper functions
-        function showLoading(text = 'Processing...') {
-            const loading = document.getElementById('loading');
-            document.querySelector('.loading-text').textContent = text;
-            loading.classList.add('show');
-        }
-        
-        function hideLoading() {
-            document.getElementById('loading').classList.remove('show');
-        }
-        
-        function showToast(message, type = '') {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.className = `toast show ${type}`;
-            
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
-        }
-        
-        function closeMenu() {
-            const menu = document.getElementById('mobileMenu');
-            menu.style.transition = 'bottom 0.3s ease-out';
-            menu.classList.remove('active');
-            
-            // Reset nav items
-            setTimeout(() => {
-                document.querySelectorAll('.nav-item').forEach(item => {
-                    if (item.id !== 'navCalendar') {
-                        item.classList.remove('active');
-                    }
-                });
-                document.getElementById('navCalendar').classList.add('active');
+                setTimeout(() => confetti.remove(), 5000);
             }, 300);
         }
-        
-        function showConfigModal() {
-            closeMenu();
-            document.getElementById('configModal').classList.add('active');
+
+        // Generate Floating Hearts
+        function generateHearts() {
+            const container = document.getElementById('heartsContainer');
+            
+            setInterval(() => {
+                const heart = document.createElement('div');
+                heart.className = 'heart';
+                heart.innerHTML = '❤️';
+                heart.style.left = Math.random() * 100 + '%';
+                heart.style.animationDuration = (8 + Math.random() * 4) + 's';
+                heart.style.fontSize = (15 + Math.random() * 20) + 'px';
+                container.appendChild(heart);
+                
+                setTimeout(() => heart.remove(), 12000);
+            }, 2000);
         }
-        
-        function closeConfigModal() {
-            document.getElementById('configModal').classList.remove('active');
-        }
-        
-        // Navigate to today
-        function navigateToToday() {
-            const today = new Date();
-            currentMonth = today.getMonth();
-            currentYear = today.getFullYear();
-            renderCalendar();
-            showToast('Navigasi ke hari ini', 'success');
-        }
-        
-        // Navigate months
-        function navigatePrevMonth() {
-            currentMonth--;
-            if (currentMonth < 0) {
-                currentMonth = 11;
-                currentYear--;
+
+        // Form Submit Handler
+        document.querySelector('.rsvp-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Animation feedback
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transform = 'rotateX(5deg)';
+                alert('Terima kasih! Konfirmasi kehadiran Anda telah kami terima. 💕');
+                this.reset();
+            }, 300);
+        });
+
+        // Parallax Effect on Scroll
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const parallaxElements = document.querySelectorAll('.flower');
+            
+            parallaxElements.forEach((el, index) => {
+                const speed = 0.5 + (index * 0.1);
+                el.style.transform = `translateY(${scrolled * speed}px) rotateZ(${scrolled * 0.2}deg)`;
+            });
+        });
+
+        // 3D Tilt Effect on Mouse Move
+        document.addEventListener('mousemove', (e) => {
+            const cards = document.querySelectorAll('.time-box, .photo-frame');
+            const x = (e.clientX / window.innerWidth - 0.5) * 20;
+            const y = (e.clientY / window.innerHeight - 0.5) * 20;
+            
+            cards.forEach(card => {
+                card.style.transform = `rotateY(${x}deg) rotateX(${-y}deg)`;
+            });
+        });
+
+        // Auto-start after loading
+        setTimeout(() => {
+            document.querySelector('.loading-screen').style.display = 'none';
+        }, 3000);
+
+        // Add sparkles to ring box
+        setInterval(() => {
+            const rings = document.querySelector('.rings');
+            if (rings) {
+                rings.style.filter = `brightness(${1 + Math.random() * 0.5})`;
             }
-            renderCalendar();
-        }
-        
-        function navigateNextMonth() {
-            currentMonth++;
-            if (currentMonth > 11) {
-                currentMonth = 0;
-                currentYear++;
+        }, 500);
+
+        // Countdown Timer (Optional)
+        function updateCountdown() {
+            const weddingDate = new Date('2024-12-12T08:00:00');
+            const now = new Date();
+            const diff = weddingDate - now;
+            
+            if (diff > 0) {
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                
+                // Update countdown display if element exists
+                const countdownEl = document.getElementById('countdown');
+                if (countdownEl) {
+                    countdownEl.innerHTML = `${days} Hari ${hours} Jam ${minutes} Menit ${seconds} Detik`;
+                }
             }
-            renderCalendar();
         }
-        
-        // Setup event listeners
-        function setupEventListeners() {
-            // Navigation
-            document.getElementById('prevMonthBtn').addEventListener('click', navigatePrevMonth);
-            document.getElementById('nextMonthBtn').addEventListener('click', navigateNextMonth);
-            
-            // Bottom nav
-            document.getElementById('navCalendar').addEventListener('click', () => {
-                document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-                document.getElementById('navCalendar').classList.add('active');
-                closeMenu();
-            });
-            
-            document.getElementById('navStats').addEventListener('click', () => {
-                document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-                document.getElementById('navStats').classList.add('active');
-                showStats();
-            });
-            
-            document.getElementById('navGenerate').addEventListener('click', () => {
-                document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-                document.getElementById('navGenerate').classList.add('active');
-                showGenerateMenu();
-            });
-            
-            document.getElementById('navExport').addEventListener('click', () => {
-                document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-                document.getElementById('navExport').classList.add('active');
-                showExportMenu();
-            });
-            
-            document.getElementById('navToday').addEventListener('click', () => {
-                document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-                document.getElementById('navCalendar').classList.add('active');
-                navigateToToday();
-            });
-            
-            // Menu close button
-            document.getElementById('menuCloseBtn').addEventListener('click', () => {
-                closeMenu();
-            });
-            
-            // Click outside menu to close
-            document.getElementById('mobileMenu').addEventListener('click', (e) => {
-                if (e.target === document.getElementById('mobileMenu')) {
-                    closeMenu();
-                }
-            });
-            
-            // Task modal
-            document.getElementById('modalBack').addEventListener('click', () => {
-                document.getElementById('taskModal').classList.remove('active');
-            });
-            
-            document.getElementById('addTaskBtn').addEventListener('click', addTask);
-            
-            document.getElementById('taskInput').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    addTask();
-                }
-            });
-            
-            // Config modal
-            document.getElementById('saveConfigBtn').addEventListener('click', () => {
-                saveGoogleConfig();
-                closeConfigModal();
-            });
-            
-            document.getElementById('cancelConfigBtn').addEventListener('click', closeConfigModal);
-            
-            // ESC key to close modals/menus
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') {
-                    const menu = document.getElementById('mobileMenu');
-                    const taskModal = document.getElementById('taskModal');
-                    const configModal = document.getElementById('configModal');
-                    
-                    if (menu.classList.contains('active')) {
-                        closeMenu();
-                    }
-                    if (taskModal.classList.contains('active')) {
-                        taskModal.classList.remove('active');
-                    }
-                    if (configModal.classList.contains('active')) {
-                        closeConfigModal();
-                    }
-                }
-            });
-        }
-        
-        // Initialize on load
-        document.addEventListener('DOMContentLoaded', init);
-        
-        // Make functions globally accessible
-        window.generateMonthly = generateMonthly;
-        window.generateYearly = generateYearly;
-        window.exportPDF = exportPDF;
-        window.exportImage = exportImage;
-        window.syncToGoogle = syncToGoogle;
-        window.loadFromGoogle = loadFromGoogle;
-        window.saveDataLocal = saveDataLocal;
-        window.showConfigModal = showConfigModal;
+
+        // Update countdown every second
+        setInterval(updateCountdown, 1000);
     </script>
 </body>
 </html>
